@@ -1,0 +1,16 @@
+{
+  "name": "米和的学习乐园",
+  "short_name": "米和学习",
+  "description": "给余米和的专属学习工具",
+  "start_url": "/mihe-learning-pro.html",
+  "display": "standalone",
+  "background_color": "#B3E5FC",
+  "theme_color": "#0288D1",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❄️</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}

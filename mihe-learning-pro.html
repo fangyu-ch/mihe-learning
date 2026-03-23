@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="blue">
+    <meta name="theme-color" content="#0288D1">
+    <title>米和的学习乐园 ❄️</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        :root {
+            --elsa-blue: #4FC3F7;
+            --elsa-dark: #0288D1;
+            --elsa-light: #B3E5FC;
+            --snow-white: #FFFFFF;
+            --magic-purple: #CE93D8;
+            --gold-star: #FFD700;
+            --success-green: #66BB6A;
+            --warning-red: #EF5350;
+            --bg-gradient: linear-gradient(135deg, #E1F5FE 0%, #B3E5FC 50%, #E1BEE7 100%);
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'ZCOOL KuaiLe', sans-serif;
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            overflow-x: hidden;
+        }
+
+        /* 雪花动画 */
+        .snowflakes { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+        .snowflake { position: absolute; top: -20px; color: rgba(255,255,255,0.8); font-size: 1.5rem; animation: fall linear infinite; }
+        @keyframes fall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0.3; } }
+
+        /* 头部 */
+        .header {
+            background: linear-gradient(135deg, var(--elsa-dark), var(--magic-purple));
+            padding: 15px 20px;
+            text-align: center;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(2, 136, 209, 0.3);
+        }
+        .header h1 { font-size: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .install-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: none;
+        }
+        .install-btn.show { display: block; }
+
+        /* 页面容器 */
+        .page { display: none; padding: 20px; position: relative; z-index: 5; }
+        .page.active { display: block; }
+
+        /* 欢迎横幅 */
+        .welcome-banner {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+            padding: 12px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--elsa-dark);
+            font-weight: 500;
+            margin-bottom: 15px;
+            border-radius: 15px;
+        }
+
+        /* 统计栏 */
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .stat-item { text-align: center; }
+        .stat-icon { font-size: 1.8rem; }
+        .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--elsa-dark); }
+        .stat-label { font-size: 0.8rem; color: #888; }
+
+        /* 模块卡片 */
+        .module-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .module-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            border: 3px solid transparent;
+        }
+        .module-card:active { transform: scale(0.95); }
+        .module-card.english { border-color: var(--elsa-blue); }
+        .module-card.chinese { border-color: var(--warning-red); }
+        .module-card.math { border-color: var(--success-green); }
+        .module-card.review { border-color: var(--magic-purple); background: linear-gradient(135deg, #fff, #F3E5F5); }
+        .module-card.history { border-color: #FFA726; background: linear-gradient(135deg, #fff, #FFF3E0); }
+        .module-card.admin { border-color: #78909C; background: linear-gradient(135deg, #fff, #ECEFF1); }
+        .module-icon { font-size: 2.5rem; margin-bottom: 8px; }
+        .module-title { font-size: 1rem; font-weight: 700; color: #333; }
+        .module-desc { font-size: 0.75rem; color: #888; margin-top: 5px; }
+
+        /* 返回按钮 */
+        .back-btn {
+            background: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--elsa-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+        .back-btn:active { transform: scale(0.95); }
+
+        /* 卡片学习 */
+        .card-container { max-width: 500px; margin: 0 auto; }
+        .flashcard {
+            background: white;
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .flashcard:active { transform: scale(0.98); }
+        .card-emoji { font-size: 4rem; margin-bottom: 15px; animation: bounceIn 0.4s ease; }
+        .card-word { font-size: 3rem; color: var(--elsa-dark); margin-bottom: 8px; }
+        .card-pinyin { font-size: 1.2rem; color: #888; margin-bottom: 10px; }
+        .card-meaning { font-size: 1rem; color: #666; }
+
+        @keyframes bounceIn { 0% { transform: scale(0); } 60% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        .card-controls { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+        .card-btn {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .card-btn.prev { background: #eee; color: #666; }
+        .card-btn.next { background: var(--elsa-blue); color: white; }
+        .card-btn.speak { background: var(--magic-purple); color: white; }
+        .card-btn:active { transform: scale(0.9); }
+
+        /* 答题模式 */
+        .quiz-card {
+            background: white;
+            border-radius: 25px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .quiz-question { font-size: 2rem; color: var(--elsa-dark); margin-bottom: 15px; }
+        .quiz-hint { color: #888; margin-bottom: 20px; font-size: 0.9rem; }
+        .quiz-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .quiz-option {
+            background: linear-gradient(135deg, var(--elsa-light), white);
+            border: 3px solid var(--elsa-blue);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--elsa-dark);
+            cursor: pointer;
+        }
+        .quiz-option:active { transform: scale(0.95); }
+        .quiz-option.correct { background: var(--success-green); border-color: var(--success-green); color: white; animation: pop 0.3s ease; }
+        .quiz-option.wrong { background: var(--warning-red); border-color: var(--warning-red); color: white; animation: shake 0.3s ease; }
+
+        @keyframes pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+        /* 数学输入 */
+        .math-display { background: linear-gradient(135deg, var(--elsa-light), #E1BEE7); border-radius: 15px; padding: 30px; margin-bottom: 20px; }
+        .math-equation { font-size: 2.5rem; color: var(--elsa-dark); }
+        .math-input-area { display: flex; justify-content: center; gap: 15px; align-items: center; }
+        .math-input {
+            width: 80px; height: 60px;
+            font-size: 2rem; text-align: center;
+            border: 3px solid var(--elsa-blue);
+            border-radius: 12px;
+            outline: none;
+            font-weight: 700;
+        }
+        .submit-btn {
+            background: linear-gradient(135deg, var(--elsa-blue), var(--magic-purple));
+            color: white; border: none;
+            padding: 12px 25px;
+            border-radius: 20px;
+            font-size: 1.1rem; font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* 历史记录 */
+        .history-list { max-width: 500px; margin: 0 auto; }
+        .history-item {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        .history-left { display: flex; align-items: center; gap: 12px; }
+        .history-emoji { font-size: 1.8rem; }
+        .history-word { font-size: 1.3rem; font-weight: 700; color: #333; }
+        .history-meta { font-size: 0.8rem; color: #888; }
+        .history-count { background: var(--elsa-light); padding: 5px 12px; border-radius: 15px; font-size: 0.9rem; color: var(--elsa-dark); font-weight: 600; }
+
+        /* 复习进度 */
+        .review-progress { max-width: 500px; margin: 0 auto 20px; }
+        .review-bar { background: #eee; border-radius: 10px; height: 15px; overflow: hidden; }
+        .review-bar-fill { height: 100%; background: linear-gradient(90deg, var(--elsa-blue), var(--magic-purple)); border-radius: 10px; transition: width 0.3s ease; }
+        .review-stats { display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.9rem; color: #666; }
+
+        /* 家长管理 */
+        .admin-section { max-width: 500px; margin: 0 auto; }
+        .admin-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        .admin-card h3 { color: var(--elsa-dark); margin-bottom: 15px; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        
+        .word-list { max-height: 200px; overflow-y: auto; margin-bottom: 15px; }
+        .word-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; border-bottom: 1px solid #eee;
+        }
+        .word-item:last-child { border-bottom: none; }
+        .word-item-info { display: flex; align-items: center; gap: 10px; }
+        .word-item-emoji { font-size: 1.3rem; }
+        .word-item-text { font-size: 1.1rem; font-weight: 600; }
+        .word-item-delete { background: #ffebee; color: var(--warning-red); border: none; padding: 5px 10px; border-radius: 10px; cursor: pointer; font-size: 0.8rem; }
+
+        .add-form { display: flex; flex-direction: column; gap: 12px; }
+        .form-row { display: flex; gap: 10px; }
+        .form-input {
+            flex: 1; padding: 12px 15px;
+            border: 2px solid #eee; border-radius: 12px;
+            font-size: 1rem; outline: none;
+        }
+        .form-input:focus { border-color: var(--elsa-blue); }
+        .add-btn {
+            background: linear-gradient(135deg, var(--success-green), #81C784);
+            color: white; border: none;
+            padding: 15px; border-radius: 12px;
+            font-size: 1rem; font-weight: 700;
+            cursor: pointer;
+        }
+        .form-hint { font-size: 0.8rem; color: #888; text-align: center; }
+
+        /* 弹窗 */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 200; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: white; border-radius: 25px; padding: 30px; text-align: center; max-width: 300px; animation: modalPop 0.3s ease; }
+        @keyframes modalPop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .modal-icon { font-size: 4rem; margin-bottom: 10px; }
+        .modal-title { font-size: 1.5rem; color: #333; margin-bottom: 8px; }
+        .modal-text { color: #666; font-size: 1rem; margin-bottom: 15px; }
+        .modal-btn { background: var(--gold-star); color: white; border: none; padding: 12px 30px; border-radius: 20px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+
+        /* 空状态 */
+        .empty-state { text-align: center; padding: 40px; color: #888; }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 10px; }
+        .empty-state-text { font-size: 1rem; }
+
+        /* 底部装饰 */
+        .footer { text-align: center; padding: 20px; color: var(--elsa-dark); font-size: 0.8rem; opacity: 0.7; }
+
+        /* 顶部 Tab 栏 */
+        .top-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .top-tab { flex: 1; padding: 10px; background: white; border: none; border-radius: 15px; font-size: 0.9rem; font-weight: 600; color: #666; cursor: pointer; }
+        .top-tab.active { background: var(--elsa-blue); color: white; }
+
+        /* 快捷入口 */
+        .quick-add { background: white; border-radius: 20px; padding: 15px; margin-bottom: 15px; }
+        .quick-add-title { font-size: 0.9rem; color: #888; margin-bottom: 10px; }
+        .quick-add-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .quick-add-btn { background: var(--elsa-light); border: none; padding: 12px 8px; border-radius: 10px; font-size: 0.9rem; cursor: pointer; }
+
+        @media (max-width: 400px) {
+            .module-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .module-card { padding: 15px 10px; }
+            .module-icon { font-size: 2rem; }
+            .card-word { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 飘落雪花 -->
+    <div class="snowflakes" id="snowflakes"></div>
+
+    <!-- ========== 主页面 ========== -->
+    <div id="homePage" class="page active">
+        <header class="header">
+            <h1>❄️ 米和的学习乐园 ❄️</h1>
+            <button class="install-btn" id="installBtn" onclick="installApp()">📱 安装到手机</button>
+        </header>
+
+        <div class="welcome-banner">👸 欢迎米和公主！今天想学什么呢？</div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value" id="totalStars">0</div>
+                <div class="stat-label">星星总数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">📚</div>
+                <div class="stat-value" id="todayCount">0</div>
+                <div class="stat-label">今日学习</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">🔄</div>
+                <div class="stat-value" id="reviewCount">0</div>
+                <div class="stat-label">待复习</div>
+            </div>
+        </div>
+
+        <div class="module-grid">
+            <div class="module-card english" onclick="openPage('englishPage')">
+                <div class="module-icon">🇬🇧</div>
+                <div class="module-title">英语启蒙</div>
+                <div class="module-desc">跟艾莎学英语</div>
+            </div>
+            <div class="module-card chinese" onclick="openPage('chinesePage')">
+                <div class="module-icon">🈷️</div>
+                <div class="module-title">中文识字</div>
+                <div class="module-desc">认识新汉字</div>
+            </div>
+            <div class="module-card math" onclick="openPage('mathPage')">
+                <div class="module-icon">🔢</div>
+                <div class="module-title">数学练习</div>
+                <div class="module-desc">加减法计算</div>
+            </div>
+            <div class="module-card review" onclick="openPage('reviewPage')">
+                <div class="module-icon">🎯</div>
+                <div class="module-title">抽查复习</div>
+                <div class="module-desc">巩固已学内容</div>
+            </div>
+            <div class="module-card history" onclick="openPage('historyPage')">
+                <div class="module-icon">📖</div>
+                <div class="module-title">学习记录</div>
+                <div class="module-desc">查看学习历史</div>
+            </div>
+            <div class="module-card admin" onclick="openPage('adminPage')">
+                <div class="module-icon">⚙️</div>
+                <div class="module-title">家长管理</div>
+                <div class="module-desc">添加/编辑内容</div>
+            </div>
+        </div>
+
+        <div class="footer">❄️ 艾莎公主陪你学习 ❄️</div>
+    </div>
+
+    <!-- ========== 英语学习 ========== -->
+    <div id="englishPage" class="page">
+        <button class="back-btn" onclick="openPage('homePage')">← 返回主页</button>
+        <div class="card-container">
+            <div class="flashcard" onclick="nextCard('english')">
+                <div class="card-emoji" id="englishEmoji">🐱</div>
+                <div class="card-word" id="englishWord">Cat</div>
+                <div class="card-pinyin" id="englishPinyin">/kæt/</div>
+                <div class="card-meaning" id="englishMeaning">小猫</div>
+            </div>
+            <div class="card-controls">
+                <button class="card-btn prev" onclick="event.stopPropagation(); prevCard('english')">←</button>
+                <button class="card-btn speak" onclick="event.stopPropagation(); speakWord('english')">🔊</button>
+                <button class="card-btn next" onclick="event.stopPropagation(); nextCard('english')">→</button>
+            </div>
+            <p style="text-align:center;color:#888;margin-top:15px;font-size:0.9rem;">点击卡片继续 · 点击🔊听发音</p>
+        </div>
+    </div>
+
+    <!-- ========== 语文学习 ========== -->
+    <div id="chinesePage" class="page">
+        <button class="back-btn" onclick="openPage('homePage')">← 返回主页</button>
+        <div class="card-container">
+            <div class="flashcard" onclick="nextCard('chinese')">
+                <div class="card-emoji" id="chineseEmoji">👨</div>
+                <div class="card-word" id="chineseWord">人</div>
+                <div class="card-pinyin" id="chinesePinyin">rén</div>
+                <div class="card-meaning" id="chineseMeaning">大人、小孩都是人</div>
+            </div>
+            <div class="card-controls">
+                <button class="card-btn prev" onclick="event.stopPropagation(); prevCard('chinese')">←</button>
+                <button class="card-btn speak" onclick="event.stopPropagation(); speakWord('chinese')">🔊</button>
+                <button class="card-btn next" onclick="event.stopPropagation(); nextCard('chinese')">→</button>
+            </div>
+            <p style="text-align:center;color:#888;margin-top:15px;font-size:0.9rem;">点击卡片继续下一个字</p>
+        </div>
+    </div>
+
+    <!-- ========== 数学练习 ========== -->
+    <div id="mathPage" class="page">
+        <button class="back-btn" onclick="openPage('homePage')">← 返回主页</button>
+        <div class="quiz-container" style="max-width:500px;margin:0 auto;">
+            <div class="quiz-card">
+                <div class="quiz-question">来算一算吧！</div>
+                <div class="math-display">
+                    <div class="math-equation" id="mathEquation">2 + 3 = ?</div>
+                </div>
+                <div class="math-input-area">
+                    <input type="number" class="math-input" id="mathAnswer" placeholder="?" min="0">
+                    <button class="submit-btn" onclick="checkMath()">回答！</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 抽查复习 ========== -->
+    <div id="reviewPage" class="page">
+        <button class="back-btn" onclick="openPage('homePage')">← 返回主页</button>
+        
+        <div class="review-progress">
+            <div class="review-bar"><div class="review-bar-fill" id="reviewBarFill" style="width:0%"></div></div>
+            <div class="review-stats">
+                <span>进度: <span id="reviewCurrent">0</span>/<span id="reviewTotal">0</span></span>
+                <span>正确: <span id="reviewCorrect">0</span></span>
+            </div>
+        </div>
+
+        <div class="quiz-container" style="max-width:500px;margin:0 auto;">
+            <div class="quiz-card" id="reviewQuizCard">
+                <div class="quiz-question" id="reviewQuestion">准备好了吗？</div>
+                <div class="quiz-hint" id="reviewHint">点击开始抽查！</div>
+                <div class="quiz-options" id="reviewOptions"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 学习记录 ========== -->
+    <div id="historyPage" class="page">
+        <button class="back-btn" onclick="openPage('homePage')">← 返回主页</button>
+        
+        <div class="top-tabs">
+            <button class="top-tab active" onclick="switchHistoryTab('english', this)">🇬🇧 英语</button>
+            <button class="top-tab" onclick="switchHistoryTab('chinese', this)">🈷️ 语文</button>
+        </div>
+
+        <div class="history-list" id="historyList"></div>
+    </div>
+
+    <!-- ========== 家长管理 ========== -->
+    <div id="adminPage" class="page">
+        <button class="back-btn" onclick="openPage('homePage')">← 返回主页</button>
+        
+        <div class="admin-section">
+            <!-- 快捷添加 -->
+            <div class="admin-card">
+                <h3>⚡ 快速添加</h3>
+                <div class="quick-add">
+                    <div class="quick-add-title">点击快速添加常用字：</div>
+                    <div class="quick-add-grid" id="quickAddGrid"></div>
+                </div>
+            </div>
+
+            <!-- 添加汉字 -->
+            <div class="admin-card">
+                <h3>🈷️ 添加汉字</h3>
+                <div class="add-form">
+                    <div class="form-row">
+                        <input type="text" class="form-input" id="addChineseWord" placeholder="汉字，如：大" maxlength="5">
+                    </div>
+                    <div class="form-row">
+                        <input type="text" class="form-input" id="addChinesePinyin" placeholder="拼音，如：dà">
+                        <input type="text" class="form-input" id="addChineseEmoji" placeholder="图标，如：📦" maxlength="3">
+                    </div>
+                    <input type="text" class="form-input" id="addChineseMeaning" placeholder="释义/组词，如：很大的东西">
+                    <button class="add-btn" onclick="addChineseWord()">✓ 添加到学习列表</button>
+                </div>
+            </div>
+
+            <!-- 添加英语 -->
+            <div class="admin-card">
+                <h3>🇬🇧 添加英语单词</h3>
+                <div class="add-form">
+                    <div class="form-row">
+                        <input type="text" class="form-input" id="addEnglishWord" placeholder="单词，如：Apple">
+                    </div>
+                    <div class="form-row">
+                        <input type="text" class="form-input" id="addEnglishPinyin" placeholder="音标，如：/ˈæpl/">
+                        <input type="text" class="form-input" id="addEnglishEmoji" placeholder="图标，如：🍎" maxlength="3">
+                    </div>
+                    <input type="text" class="form-input" id="addEnglishMeaning" placeholder="中文意思，如：苹果">
+                    <button class="add-btn" onclick="addEnglishWord()">✓ 添加到学习列表</button>
+                </div>
+            </div>
+
+            <!-- 管理已添加的内容 -->
+            <div class="admin-card">
+                <h3>📝 已添加的汉字 (<span id="chineseCount">0</span>)</h3>
+                <div class="word-list" id="chineseWordList"></div>
+            </div>
+
+            <div class="admin-card">
+                <h3>📝 已添加的单词 (<span id="englishCount">0</span>)</h3>
+                <div class="word-list" id="englishWordList"></div>
+            </div>
+
+            <div class="admin-card" style="background:#fff3e0;">
+                <h3>🗑️ 清空数据</h3>
+                <p style="color:#888;font-size:0.9rem;margin-bottom:10px;">谨慎操作！清空后不可恢复。</p>
+                <button onclick="clearAllData()" style="background:#ff5722;color:white;border:none;padding:12px 20px;border-radius:10px;cursor:pointer;font-size:0.9rem;">清空所有学习记录</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功弹窗 -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal">
+            <div class="modal-icon" id="modalIcon">🎉</div>
+            <div class="modal-title" id="modalTitle">太棒了！</div>
+            <div class="modal-text" id="modalText">米和真聪明！</div>
+            <button class="modal-btn" onclick="closeModal()">继续加油！</button>
+        </div>
+    </div>
+
+    <script>
+        // ========== 雪花 ==========
+        function createSnowflakes() {
+            const container = document.getElementById('snowflakes');
+            const chars = ['❄', '❅', '❆', '✧'];
+            for (let i = 0; i < 20; i++) {
+                const s = document.createElement('div');
+                s.className = 'snowflake';
+                s.textContent = chars[Math.floor(Math.random() * chars.length)];
+                s.style.left = Math.random() * 100 + '%';
+                s.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                s.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(s);
+            }
+        }
+        createSnowflakes();
+
+        // ========== 默认数据 ==========
+        const defaultEnglish = [
+            { word: 'Cat', pinyin: '/kæt/', meaning: '小猫', emoji: '🐱' },
+            { word: 'Dog', pinyin: '/dɔːɡ/', meaning: '小狗', emoji: '🐕' },
+            { word: 'Apple', pinyin: '/ˈæpl/', meaning: '苹果', emoji: '🍎' },
+            { word: 'Banana', pinyin: '/bəˈnɑːnə/', meaning: '香蕉', emoji: '🍌' },
+            { word: 'Sun', pinyin: '/sʌn/', meaning: '太阳', emoji: '☀️' },
+            { word: 'Moon', pinyin: '/muːn/', meaning: '月亮', emoji: '🌙' },
+            { word: 'Star', pinyin: '/stɑːr/', meaning: '星星', emoji: '⭐' },
+            { word: 'Fish', pinyin: '/fɪʃ/', meaning: '鱼', emoji: '🐟' },
+            { word: 'Bird', pinyin: '/bɜːrd/', meaning: '小鸟', emoji: '🐦' },
+            { word: 'Flower', pinyin: '/ˈflaʊər/', meaning: '花', emoji: '🌸' },
+            { word: 'Book', pinyin: '/bʊk/', meaning: '书', emoji: '📚' },
+            { word: 'Ball', pinyin: '/bɔːl/', meaning: '球', emoji: '⚽' },
+            { word: 'Car', pinyin: '/kɑːr/', meaning: '汽车', emoji: '🚗' },
+            { word: 'Tree', pinyin: '/triː/', meaning: '树', emoji: '🌳' },
+            { word: 'House', pinyin: '/haʊs/', meaning: '房子', emoji: '🏠' },
+            { word: 'Happy', pinyin: '/ˈhæpi/', meaning: '开心的', emoji: '😊' },
+            { word: 'Love', pinyin: '/lʌv/', meaning: '爱', emoji: '❤️' },
+            { word: 'One', pinyin: '/wʌn/', meaning: '一', emoji: '1️⃣' },
+            { word: 'Two', pinyin: '/tuː/', meaning: '二', emoji: '2️⃣' },
+            { word: 'Three', pinyin: '/θriː/', meaning: '三', emoji: '3️⃣' }
+        ];
+
+        const defaultChinese = [
+            // ===== 学前基础字 =====
+            { word: '人', pinyin: 'rén', meaning: '大人、小孩都是人', emoji: '👨‍👩‍👧' },
+            { word: '日', pinyin: 'rì', meaning: '太阳，白天', emoji: '☀️' },
+            { word: '月', pinyin: 'yuè', meaning: '月亮，晚上', emoji: '🌙' },
+            { word: '水', pinyin: 'shuǐ', meaning: '水可以喝', emoji: '💧' },
+            { word: '火', pinyin: 'huǒ', meaning: '火会发热', emoji: '🔥' },
+            { word: '山', pinyin: 'shān', meaning: '高高的山', emoji: '⛰️' },
+            { word: '大', pinyin: 'dà', meaning: '很大的东西', emoji: '📦' },
+            { word: '小', pinyin: 'xiǎo', meaning: '很小的东西', emoji: '🐜' },
+            { word: '上', pinyin: 'shàng', meaning: '在上面', emoji: '⬆️' },
+            { word: '下', pinyin: 'xià', meaning: '在下面', emoji: '⬇️' },
+            { word: '天', pinyin: 'tiān', meaning: '天空，一天', emoji: '🌤️' },
+            { word: '地', pinyin: 'dì', meaning: '地面，地上', emoji: '🌍' },
+            { word: '爸', pinyin: 'bà', meaning: '爸爸', emoji: '👨' },
+            { word: '妈', pinyin: 'mā', meaning: '妈妈', emoji: '👩' },
+            { word: '子', pinyin: 'zǐ', meaning: '儿子、孩子', emoji: '👶' },
+            { word: '女', pinyin: 'nǚ', meaning: '女孩', emoji: '👧' },
+            { word: '口', pinyin: 'kǒu', meaning: '嘴巴', emoji: '🗣️' },
+            { word: '手', pinyin: 'shǒu', meaning: '小手，举手', emoji: '✋' },
+            { word: '足', pinyin: 'zú', meaning: '脚，足球', emoji: '⚽' },
+            { word: '耳', pinyin: 'ěr', meaning: '耳朵', emoji: '👂' },
+            { word: '目', pinyin: 'mù', meaning: '眼睛', emoji: '👀' },
+            { word: '中', pinyin: 'zhōng', meaning: '中间', emoji: '🏮' },
+            { word: '国', pinyin: 'guó', meaning: '中国', emoji: '🇨🇳' },
+            { word: '好', pinyin: 'hǎo', meaning: '很好！', emoji: '👍' },
+            { word: '学', pinyin: 'xué', meaning: '学习，上学', emoji: '📖' },
+            // ===== 一年级上册 =====
+            { word: '一', pinyin: 'yī', meaning: '数字1', emoji: '1️⃣' },
+            { word: '二', pinyin: 'èr', meaning: '数字2', emoji: '2️⃣' },
+            { word: '三', pinyin: 'sān', meaning: '数字3', emoji: '3️⃣' },
+            { word: '四', pinyin: 'sì', meaning: '数字4', emoji: '4️⃣' },
+            { word: '五', pinyin: 'wǔ', meaning: '数字5', emoji: '5️⃣' },
+            { word: '六', pinyin: 'liù', meaning: '数字6', emoji: '6️⃣' },
+            { word: '七', pinyin: 'qī', meaning: '数字7', emoji: '7️⃣' },
+            { word: '八', pinyin: 'bā', meaning: '数字8', emoji: '8️⃣' },
+            { word: '九', pinyin: 'jiǔ', meaning: '数字9', emoji: '9️⃣' },
+            { word: '十', pinyin: 'shí', meaning: '数字10', emoji: '🔟' },
+            { word: '我', pinyin: 'wǒ', meaning: '自己', emoji: '🙋' },
+            { word: '你', pinyin: 'nǐ', meaning: '对方', emoji: '👉' },
+            { word: '他', pinyin: 'tā', meaning: '男生他', emoji: '👦' },
+            { word: '她', pinyin: 'tā', meaning: '女生她', emoji: '👧' },
+            { word: '们', pinyin: 'men', meaning: '我们、你们', emoji: '👫' },
+            { word: '的', pinyin: 'de', meaning: '我的、你的', emoji: '✨' },
+            { word: '了', pinyin: 'le', meaning: '吃了、学了', emoji: '✅' },
+            { word: '在', pinyin: 'zài', meaning: '在家、在外', emoji: '📍' },
+            { word: '有', pinyin: 'yǒu', meaning: '有书、有玩具', emoji: '🎁' },
+            { word: '是', pinyin: 'shì', meaning: '我是学生', emoji: '✔️' },
+            { word: '不', pinyin: 'bù', meaning: '不对、不要', emoji: '❌' },
+            { word: '也', pinyin: 'yě', meaning: '我也去', emoji: '➕' },
+            { word: '来', pinyin: 'lái', meaning: '来学校', emoji: '🚶' },
+            { word: '去', pinyin: 'qù', meaning: '去玩耍', emoji: '🏃' },
+            { word: '这', pinyin: 'zhè', meaning: '这个东西', emoji: '👈' },
+            { word: '那', pinyin: 'nà', meaning: '那个东西', emoji: '👉' },
+            { word: '里', pinyin: 'lǐ', meaning: '家里、书里', emoji: '🏠' },
+            { word: '看', pinyin: 'kàn', meaning: '看书、看电视', emoji: '👁️' },
+            { word: '说', pinyin: 'shuō', meaning: '说话', emoji: '💬' },
+            { word: '走', pinyin: 'zǒu', meaning: '走路', emoji: '🚶' },
+            { word: '吃', pinyin: 'chī', meaning: '吃饭', emoji: '🍚' },
+            { word: '喝', pinyin: 'hē', meaning: '喝水', emoji: '🥤' },
+            { word: '玩', pinyin: 'wán', meaning: '玩游戏', emoji: '🎮' },
+            { word: '跑', pinyin: 'pǎo', meaning: '跑步', emoji: '🏃' },
+            { word: '跳', pinyin: 'tiào', meaning: '跳绳', emoji: '🪢' },
+            { word: '飞', pinyin: 'fēi', meaning: '飞机、小鸟飞', emoji: '✈️' },
+            { word: '鸟', pinyin: 'niǎo', meaning: '小鸟', emoji: '🐦' },
+            { word: '鱼', pinyin: 'yú', meaning: '鱼', emoji: '🐟' },
+            { word: '牛', pinyin: 'niú', meaning: '牛', emoji: '🐄' },
+            { word: '羊', pinyin: 'yáng', meaning: '小羊', emoji: '🐑' },
+            { word: '猫', pinyin: 'māo', meaning: '猫咪', emoji: '🐱' },
+            { word: '狗', pinyin: 'gǒu', meaning: '小狗', emoji: '🐶' },
+            { word: '虫', pinyin: 'chóng', meaning: '虫子', emoji: '🐛' },
+            { word: '花', pinyin: 'huā', meaning: '花朵', emoji: '🌸' },
+            { word: '草', pinyin: 'cǎo', meaning: '小草', emoji: '🌿' },
+            { word: '木', pinyin: 'mù', meaning: '树木', emoji: '🌲' },
+            { word: '石', pinyin: 'shí', meaning: '石头', emoji: '🪨' },
+            { word: '土', pinyin: 'tǔ', meaning: '泥土', emoji: '🌱' },
+            { word: '云', pinyin: 'yún', meaning: '白云', emoji: '☁️' },
+            { word: '风', pinyin: 'fēng', meaning: '刮风', emoji: '🌬️' },
+            { word: '雨', pinyin: 'yǔ', meaning: '下雨', emoji: '🌧️' },
+            { word: '雪', pinyin: 'xuě', meaning: '下雪', emoji: '❄️' },
+            { word: '光', pinyin: 'guāng', meaning: '阳光、灯光', emoji: '💡' },
+            // ===== 一年级下册 =====
+            { word: '春', pinyin: 'chūn', meaning: '春天', emoji: '🌺' },
+            { word: '夏', pinyin: 'xià', meaning: '夏天', emoji: '☀️' },
+            { word: '秋', pinyin: 'qiū', meaning: '秋天', emoji: '🍂' },
+            { word: '冬', pinyin: 'dōng', meaning: '冬天', emoji: '⛄' },
+            { word: '东', pinyin: 'dōng', meaning: '东方', emoji: '🧭' },
+            { word: '西', pinyin: 'xī', meaning: '西方', emoji: '🌅' },
+            { word: '南', pinyin: 'nán', meaning: '南方', emoji: '🌴' },
+            { word: '北', pinyin: 'běi', meaning: '北方', emoji: '❄️' },
+            { word: '左', pinyin: 'zuǒ', meaning: '左边', emoji: '⬅️' },
+            { word: '右', pinyin: 'yòu', meaning: '右边', emoji: '➡️' },
+            { word: '前', pinyin: 'qián', meaning: '前面', emoji: '⬆️' },
+            { word: '后', pinyin: 'hòu', meaning: '后面', emoji: '⬇️' },
+            { word: '多', pinyin: 'duō', meaning: '很多', emoji: '💯' },
+            { word: '少', pinyin: 'shǎo', meaning: '很少', emoji: '1️⃣' },
+            { word: '长', pinyin: 'cháng', meaning: '长长的', emoji: '📏' },
+            { word: '短', pinyin: 'duǎn', meaning: '短短的', emoji: '✂️' },
+            { word: '高', pinyin: 'gāo', meaning: '高楼', emoji: '🏢' },
+            { word: '低', pinyin: 'dī', meaning: '低矮', emoji: '🏡' },
+            { word: '快', pinyin: 'kuài', meaning: '跑得快', emoji: '🚀' },
+            { word: '慢', pinyin: 'màn', meaning: '走得慢', emoji: '🐢' },
+            { word: '早', pinyin: 'zǎo', meaning: '早上好', emoji: '🌅' },
+            { word: '晚', pinyin: 'wǎn', meaning: '晚上', emoji: '🌃' },
+            { word: '冷', pinyin: 'lěng', meaning: '天气冷', emoji: '🥶' },
+            { word: '热', pinyin: 'rè', meaning: '天气热', emoji: '🔥' },
+            { word: '新', pinyin: 'xīn', meaning: '新书包', emoji: '🎒' },
+            { word: '旧', pinyin: 'jiù', meaning: '旧东西', emoji: '📦' },
+            { word: '红', pinyin: 'hóng', meaning: '红色', emoji: '🔴' },
+            { word: '黄', pinyin: 'huáng', meaning: '黄色', emoji: '🟡' },
+            { word: '蓝', pinyin: 'lán', meaning: '蓝色', emoji: '🔵' },
+            { word: '绿', pinyin: 'lǜ', meaning: '绿色', emoji: '🟢' },
+            { word: '白', pinyin: 'bái', meaning: '白色', emoji: '⚪' },
+            { word: '黑', pinyin: 'hēi', meaning: '黑色', emoji: '⚫' },
+            // ===== 二年级上册 =====
+            { word: '家', pinyin: 'jiā', meaning: '我们的家', emoji: '🏠' },
+            { word: '校', pinyin: 'xiào', meaning: '学校', emoji: '🏫' },
+            { word: '书', pinyin: 'shū', meaning: '书本', emoji: '📚' },
+            { word: '包', pinyin: 'bāo', meaning: '书包', emoji: '🎒' },
+            { word: '笔', pinyin: 'bǐ', meaning: '铅笔', emoji: '✏️' },
+            { word: '纸', pinyin: 'zhǐ', meaning: '白纸', emoji: '📄' },
+            { word: '桌', pinyin: 'zhuō', meaning: '桌子', emoji: '🪑' },
+            { word: '椅', pinyin: 'yǐ', meaning: '椅子', emoji: '🪑' },
+            { word: '门', pinyin: 'mén', meaning: '开门、关门', emoji: '🚪' },
+            { word: '窗', pinyin: 'chuāng', meaning: '窗户', emoji: '🪟' },
+            { word: '床', pinyin: 'chuáng', meaning: '床上睡觉', emoji: '🛏️' },
+            { word: '衣', pinyin: 'yī', meaning: '衣服', emoji: '👕' },
+            { word: '裤', pinyin: 'kù', meaning: '裤子', emoji: '👖' },
+            { word: '鞋', pinyin: 'xié', meaning: '鞋子', emoji: '👟' },
+            { word: '帽', pinyin: 'mào', meaning: '帽子', emoji: '🧢' },
+            { word: '饭', pinyin: 'fàn', meaning: '吃饭', emoji: '🍚' },
+            { word: '菜', pinyin: 'cài', meaning: '蔬菜', emoji: '🥦' },
+            { word: '肉', pinyin: 'ròu', meaning: '肉类', emoji: '🥩' },
+            { word: '蛋', pinyin: 'dàn', meaning: '鸡蛋', emoji: '🥚' },
+            { word: '米', pinyin: 'mǐ', meaning: '大米', emoji: '🌾' },
+            { word: '面', pinyin: 'miàn', meaning: '面条', emoji: '🍜' },
+            { word: '糖', pinyin: 'táng', meaning: '糖果', emoji: '🍬' },
+            { word: '果', pinyin: 'guǒ', meaning: '水果', emoji: '🍎' },
+            { word: '苹', pinyin: 'píng', meaning: '苹果', emoji: '🍎' },
+            { word: '梨', pinyin: 'lí', meaning: '梨子', emoji: '🍐' },
+            { word: '桃', pinyin: 'táo', meaning: '桃子', emoji: '🍑' },
+            { word: '橙', pinyin: 'chéng', meaning: '橙子', emoji: '🍊' },
+            { word: '车', pinyin: 'chē', meaning: '汽车', emoji: '🚗' },
+            { word: '船', pinyin: 'chuán', meaning: '轮船', emoji: '🚢' },
+            { word: '飞', pinyin: 'fēi', meaning: '飞机', emoji: '✈️' },
+            { word: '路', pinyin: 'lù', meaning: '马路', emoji: '🛣️' },
+            { word: '桥', pinyin: 'qiáo', meaning: '桥梁', emoji: '🌉' },
+            // ===== 二年级下册 =====
+            { word: '爱', pinyin: 'ài', meaning: '爱家人', emoji: '❤️' },
+            { word: '朋', pinyin: 'péng', meaning: '朋友', emoji: '👫' },
+            { word: '友', pinyin: 'yǒu', meaning: '好朋友', emoji: '🤝' },
+            { word: '帮', pinyin: 'bāng', meaning: '帮助', emoji: '🙌' },
+            { word: '分', pinyin: 'fēn', meaning: '分享、分钟', emoji: '⏱️' },
+            { word: '合', pinyin: 'hé', meaning: '合作', emoji: '🤝' },
+            { word: '同', pinyin: 'tóng', meaning: '同学', emoji: '👨‍👩‍👧‍👦' },
+            { word: '老', pinyin: 'lǎo', meaning: '老师', emoji: '👩‍🏫' },
+            { word: '师', pinyin: 'shī', meaning: '老师', emoji: '👨‍🏫' },
+            { word: '生', pinyin: 'shēng', meaning: '学生、出生', emoji: '👶' },
+            { word: '课', pinyin: 'kè', meaning: '上课', emoji: '📝' },
+            { word: '读', pinyin: 'dú', meaning: '读书', emoji: '📖' },
+            { word: '写', pinyin: 'xiě', meaning: '写字', emoji: '✍️' },
+            { word: '画', pinyin: 'huà', meaning: '画画', emoji: '🎨' },
+            { word: '唱', pinyin: 'chàng', meaning: '唱歌', emoji: '🎵' },
+            { word: '跳', pinyin: 'tiào', meaning: '跳舞', emoji: '💃' },
+            { word: '运', pinyin: 'yùn', meaning: '运动', emoji: '⚽' },
+            { word: '动', pinyin: 'dòng', meaning: '动物、运动', emoji: '🦁' },
+            { word: '作', pinyin: 'zuò', meaning: '作业、工作', emoji: '📝' },
+            { word: '业', pinyin: 'yè', meaning: '作业', emoji: '📚' },
+            { word: '问', pinyin: 'wèn', meaning: '提问', emoji: '❓' },
+            { word: '答', pinyin: 'dá', meaning: '回答', emoji: '✅' },
+            { word: '对', pinyin: 'duì', meaning: '对了！', emoji: '✔️' },
+            { word: '错', pinyin: 'cuò', meaning: '错误', emoji: '❌' },
+            { word: '难', pinyin: 'nán', meaning: '很难', emoji: '😰' },
+            { word: '易', pinyin: 'yì', meaning: '容易', emoji: '😊' },
+            // ===== 三年级常用字 =====
+            { word: '河', pinyin: 'hé', meaning: '河流', emoji: '🏞️' },
+            { word: '湖', pinyin: 'hú', meaning: '湖泊', emoji: '🏞️' },
+            { word: '海', pinyin: 'hǎi', meaning: '大海', emoji: '🌊' },
+            { word: '洋', pinyin: 'yáng', meaning: '海洋', emoji: '🌊' },
+            { word: '溪', pinyin: 'xī', meaning: '小溪', emoji: '🏔️' },
+            { word: '池', pinyin: 'chí', meaning: '水池', emoji: '🏊' },
+            { word: '岸', pinyin: 'àn', meaning: '河岸', emoji: '🏖️' },
+            { word: '岛', pinyin: 'dǎo', meaning: '海岛', emoji: '🏝️' },
+            { word: '森', pinyin: 'sēn', meaning: '森林', emoji: '🌲' },
+            { word: '林', pinyin: 'lín', meaning: '树林', emoji: '🌳' },
+            { word: '田', pinyin: 'tián', meaning: '田地', emoji: '🌾' },
+            { word: '野', pinyin: 'yě', meaning: '野外', emoji: '🌿' },
+            { word: '城', pinyin: 'chéng', meaning: '城市', emoji: '🏙️' },
+            { word: '市', pinyin: 'shì', meaning: '城市、市场', emoji: '🏪' },
+            { word: '村', pinyin: 'cūn', meaning: '农村', emoji: '🏡' },
+            { word: '街', pinyin: 'jiē', meaning: '街道', emoji: '🛣️' },
+            { word: '楼', pinyin: 'lóu', meaning: '楼房', emoji: '🏢' },
+            { word: '院', pinyin: 'yuàn', meaning: '院子', emoji: '🏡' },
+            { word: '园', pinyin: 'yuán', meaning: '公园', emoji: '🌳' },
+            { word: '场', pinyin: 'chǎng', meaning: '操场、市场', emoji: '⛳' },
+            { word: '站', pinyin: 'zhàn', meaning: '车站', emoji: '🚉' },
+            { word: '店', pinyin: 'diàn', meaning: '商店', emoji: '🏪' },
+            { word: '馆', pinyin: 'guǎn', meaning: '博物馆', emoji: '🏛️' },
+            { word: '厂', pinyin: 'chǎng', meaning: '工厂', emoji: '🏭' },
+            // ===== 动物类 =====
+            { word: '马', pinyin: 'mǎ', meaning: '马', emoji: '🐴' },
+            { word: '猪', pinyin: 'zhū', meaning: '猪', emoji: '🐷' },
+            { word: '鸡', pinyin: 'jī', meaning: '鸡', emoji: '🐔' },
+            { word: '鸭', pinyin: 'yā', meaning: '鸭子', emoji: '🦆' },
+            { word: '兔', pinyin: 'tù', meaning: '兔子', emoji: '🐰' },
+            { word: '熊', pinyin: 'xióng', meaning: '熊', emoji: '🐻' },
+            { word: '猴', pinyin: 'hóu', meaning: '猴子', emoji: '🐒' },
+            { word: '象', pinyin: 'xiàng', meaning: '大象', emoji: '🐘' },
+            { word: '狮', pinyin: 'shī', meaning: '狮子', emoji: '🦁' },
+            { word: '虎', pinyin: 'hǔ', meaning: '老虎', emoji: '🐯' },
+            { word: '熊猫', pinyin: 'xióng māo', meaning: '大熊猫', emoji: '🐼' },
+            { word: '龙', pinyin: 'lóng', meaning: '龙', emoji: '🐲' },
+            { word: '蛇', pinyin: 'shé', meaning: '蛇', emoji: '🐍' },
+            { word: '龟', pinyin: 'guī', meaning: '乌龟', emoji: '🐢' },
+            { word: '蝶', pinyin: 'dié', meaning: '蝴蝶', emoji: '🦋' },
+            { word: '蜂', pinyin: 'fēng', meaning: '蜜蜂', emoji: '🐝' },
+            { word: '蚂', pinyin: 'mǎ', meaning: '蚂蚁', emoji: '🐜' },
+            { word: '蜗', pinyin: 'wō', meaning: '蜗牛', emoji: '🐌' },
+            { word: '螃', pinyin: 'páng', meaning: '螃蟹', emoji: '🦀' },
+            { word: '虾', pinyin: 'xiā', meaning: '虾', emoji: '🦐' },
+            // ===== 植物类 =====
+            { word: '树', pinyin: 'shù', meaning: '大树', emoji: '🌳' },
+            { word: '叶', pinyin: 'yè', meaning: '树叶', emoji: '🍃' },
+            { word: '根', pinyin: 'gēn', meaning: '树根', emoji: '🌱' },
+            { word: '枝', pinyin: 'zhī', meaning: '树枝', emoji: '🌿' },
+            { word: '芽', pinyin: 'yá', meaning: '发芽', emoji: '🌱' },
+            { word: '苗', pinyin: 'miáo', meaning: '小苗', emoji: '🌿' },
+            { word: '竹', pinyin: 'zhú', meaning: '竹子', emoji: '🎋' },
+            { word: '松', pinyin: 'sōng', meaning: '松树', emoji: '🌲' },
+            { word: '柳', pinyin: 'liǔ', meaning: '柳树', emoji: '🌿' },
+            { word: '梅', pinyin: 'méi', meaning: '梅花', emoji: '🌸' },
+            { word: '荷', pinyin: 'hé', meaning: '荷花', emoji: '🌷' },
+            { word: '菊', pinyin: 'jú', meaning: '菊花', emoji: '🌼' },
+            // ===== 身体部位 =====
+            { word: '头', pinyin: 'tóu', meaning: '头', emoji: '👤' },
+            { word: '脸', pinyin: 'liǎn', meaning: '脸', emoji: '😊' },
+            { word: '鼻', pinyin: 'bí', meaning: '鼻子', emoji: '👃' },
+            { word: '眉', pinyin: 'méi', meaning: '眉毛', emoji: '😏' },
+            { word: '腿', pinyin: 'tuǐ', meaning: '腿', emoji: '🦵' },
+            { word: '背', pinyin: 'bèi', meaning: '背部', emoji: '🔙' },
+            { word: '肩', pinyin: 'jiān', meaning: '肩膀', emoji: '💪' },
+            { word: '臂', pinyin: 'bì', meaning: '手臂', emoji: '💪' },
+            { word: '指', pinyin: 'zhǐ', meaning: '手指', emoji: '☝️' },
+            { word: '腰', pinyin: 'yāo', meaning: '腰部', emoji: '🧍' },
+            // ===== 食物类 =====
+            { word: '粥', pinyin: 'zhōu', meaning: '粥', emoji: '🥣' },
+            { word: '汤', pinyin: 'tāng', meaning: '汤', emoji: '🍲' },
+            { word: '饼', pinyin: 'bǐng', meaning: '饼', emoji: '🥙' },
+            { word: '饺', pinyin: 'jiǎo', meaning: '饺子', emoji: '🥟' },
+            { word: '面条', pinyin: 'miàn tiáo', meaning: '面条', emoji: '🍜' },
+            { word: '包子', pinyin: 'bāo zi', meaning: '包子', emoji: '🥟' },
+            { word: '豆', pinyin: 'dòu', meaning: '豆腐、豆浆', emoji: '🫘' },
+            { word: '盐', pinyin: 'yán', meaning: '盐巴', emoji: '🧂' },
+            { word: '油', pinyin: 'yóu', meaning: '油', emoji: '🫙' },
+            { word: '醋', pinyin: 'cù', meaning: '醋', emoji: '🍶' },
+            // ===== 天文气象 =====
+            { word: '星', pinyin: 'xīng', meaning: '星星', emoji: '⭐' },
+            { word: '晴', pinyin: 'qíng', meaning: '晴天', emoji: '☀️' },
+            { word: '阴', pinyin: 'yīn', meaning: '阴天', emoji: '☁️' },
+            { word: '雷', pinyin: 'léi', meaning: '打雷', emoji: '⛈️' },
+            { word: '闪', pinyin: 'shǎn', meaning: '闪电', emoji: '⚡' },
+            { word: '霜', pinyin: 'shuāng', meaning: '霜', emoji: '🌨️' },
+            { word: '露', pinyin: 'lù', meaning: '露水', emoji: '💧' },
+            { word: '虹', pinyin: 'hóng', meaning: '彩虹', emoji: '🌈' },
+            // ===== 方位时间 =====
+            { word: '年', pinyin: 'nián', meaning: '一年', emoji: '📅' },
+            { word: '月份', pinyin: 'yuè fèn', meaning: '月份', emoji: '📆' },
+            { word: '周', pinyin: 'zhōu', meaning: '一周', emoji: '📅' },
+            { word: '今', pinyin: 'jīn', meaning: '今天', emoji: '📌' },
+            { word: '明', pinyin: 'míng', meaning: '明天', emoji: '🌅' },
+            { word: '昨', pinyin: 'zuó', meaning: '昨天', emoji: '⏪' },
+            { word: '时', pinyin: 'shí', meaning: '时间', emoji: '⏰' },
+            { word: '分钟', pinyin: 'fēn zhōng', meaning: '分钟', emoji: '⏱️' },
+            { word: '刻', pinyin: 'kè', meaning: '一刻钟', emoji: '🕐' },
+            // ===== 常用动词 =====
+            { word: '做', pinyin: 'zuò', meaning: '做事', emoji: '🛠️' },
+            { word: '坐', pinyin: 'zuò', meaning: '坐下', emoji: '🪑' },
+            { word: '站', pinyin: 'zhàn', meaning: '站起来', emoji: '🧍' },
+            { word: '睡', pinyin: 'shuì', meaning: '睡觉', emoji: '😴' },
+            { word: '醒', pinyin: 'xǐng', meaning: '醒来', emoji: '😃' },
+            { word: '哭', pinyin: 'kū', meaning: '哭泣', emoji: '😢' },
+            { word: '笑', pinyin: 'xiào', meaning: '笑', emoji: '😂' },
+            { word: '想', pinyin: 'xiǎng', meaning: '想一想', emoji: '🤔' },
+            { word: '知', pinyin: 'zhī', meaning: '知道', emoji: '💡' },
+            { word: '道', pinyin: 'dào', meaning: '知道', emoji: '🛣️' },
+            { word: '喜', pinyin: 'xǐ', meaning: '喜欢', emoji: '😊' },
+            { word: '欢', pinyin: 'huān', meaning: '欢迎、喜欢', emoji: '🎉' },
+            { word: '找', pinyin: 'zhǎo', meaning: '找东西', emoji: '🔍' },
+            { word: '拿', pinyin: 'ná', meaning: '拿起来', emoji: '🤲' },
+            { word: '放', pinyin: 'fàng', meaning: '放下', emoji: '📦' },
+            { word: '开', pinyin: 'kāi', meaning: '开门、开灯', emoji: '🔓' },
+            { word: '关', pinyin: 'guān', meaning: '关门', emoji: '🔒' },
+            { word: '买', pinyin: 'mǎi', meaning: '买东西', emoji: '🛒' },
+            { word: '卖', pinyin: 'mài', meaning: '卖东西', emoji: '💰' },
+            { word: '用', pinyin: 'yòng', meaning: '用笔写', emoji: '✍️' },
+            { word: '带', pinyin: 'dài', meaning: '带书包', emoji: '🎒' },
+            { word: '穿', pinyin: 'chuān', meaning: '穿衣服', emoji: '👕' },
+            { word: '脱', pinyin: 'tuō', meaning: '脱鞋', emoji: '👟' },
+            { word: '洗', pinyin: 'xǐ', meaning: '洗手', emoji: '🧼' },
+            { word: '刷', pinyin: 'shuā', meaning: '刷牙', emoji: '🪥' },
+            { word: '扫', pinyin: 'sǎo', meaning: '扫地', emoji: '🧹' },
+            { word: '擦', pinyin: 'cā', meaning: '擦桌子', emoji: '🧽' },
+            { word: '折', pinyin: 'zhé', meaning: '折纸', emoji: '📄' },
+            { word: '剪', pinyin: 'jiǎn', meaning: '剪纸', emoji: '✂️' },
+            { word: '贴', pinyin: 'tiē', meaning: '贴画', emoji: '🖼️' },
+            // ===== 形容词 =====
+            { word: '圆', pinyin: 'yuán', meaning: '圆形', emoji: '⭕' },
+            { word: '方', pinyin: 'fāng', meaning: '正方形', emoji: '⬜' },
+            { word: '直', pinyin: 'zhí', meaning: '直线', emoji: '📏' },
+            { word: '弯', pinyin: 'wān', meaning: '弯曲', emoji: '〰️' },
+            { word: '粗', pinyin: 'cū', meaning: '粗细的粗', emoji: '📏' },
+            { word: '细', pinyin: 'xì', meaning: '细线', emoji: '🧵' },
+            { word: '硬', pinyin: 'yìng', meaning: '坚硬', emoji: '💎' },
+            { word: '软', pinyin: 'ruǎn', meaning: '柔软', emoji: '🧸' },
+            { word: '重', pinyin: 'zhòng', meaning: '很重', emoji: '🏋️' },
+            { word: '轻', pinyin: 'qīng', meaning: '很轻', emoji: '🪶' },
+            { word: '甜', pinyin: 'tián', meaning: '甜甜的', emoji: '🍬' },
+            { word: '酸', pinyin: 'suān', meaning: '酸酸的', emoji: '🍋' },
+            { word: '苦', pinyin: 'kǔ', meaning: '苦苦的', emoji: '😖' },
+            { word: '辣', pinyin: 'là', meaning: '辣的', emoji: '🌶️' },
+            { word: '香', pinyin: 'xiāng', meaning: '好香', emoji: '🌺' },
+            { word: '臭', pinyin: 'chòu', meaning: '很臭', emoji: '💨' },
+            { word: '亮', pinyin: 'liàng', meaning: '明亮', emoji: '💡' },
+            { word: '暗', pinyin: 'àn', meaning: '黑暗', emoji: '🌑' },
+            { word: '干', pinyin: 'gān', meaning: '干净', emoji: '✨' },
+            { word: '湿', pinyin: 'shī', meaning: '湿了', emoji: '💦' },
+            { word: '净', pinyin: 'jìng', meaning: '干净', emoji: '🧹' },
+            { word: '脏', pinyin: 'zāng', meaning: '很脏', emoji: '🐷' },
+            { word: '美', pinyin: 'měi', meaning: '美丽', emoji: '🌸' },
+            { word: '丑', pinyin: 'chǒu', meaning: '丑的', emoji: '😅' },
+            // ===== 数量词 =====
+            { word: '百', pinyin: 'bǎi', meaning: '一百', emoji: '💯' },
+            { word: '千', pinyin: 'qiān', meaning: '一千', emoji: '🔢' },
+            { word: '万', pinyin: 'wàn', meaning: '一万', emoji: '🔢' },
+            { word: '半', pinyin: 'bàn', meaning: '一半', emoji: '½' },
+            { word: '双', pinyin: 'shuāng', meaning: '一双', emoji: '👟' },
+            { word: '对', pinyin: 'duì', meaning: '一对', emoji: '👫' },
+            { word: '群', pinyin: 'qún', meaning: '一群', emoji: '👨‍👩‍👧‍👦' },
+            { word: '棵', pinyin: 'kē', meaning: '一棵树', emoji: '🌲' },
+            { word: '朵', pinyin: 'duǒ', meaning: '一朵花', emoji: '🌸' },
+            { word: '匹', pinyin: 'pǐ', meaning: '一匹马', emoji: '🐴' },
+            { word: '条', pinyin: 'tiáo', meaning: '一条鱼', emoji: '🐟' },
+            { word: '只', pinyin: 'zhī', meaning: '一只鸟', emoji: '🐦' },
+            { word: '块', pinyin: 'kuài', meaning: '一块糖', emoji: '🍬' },
+            { word: '张', pinyin: 'zhāng', meaning: '一张纸', emoji: '📄' },
+            { word: '本', pinyin: 'běn', meaning: '一本书', emoji: '📚' },
+            { word: '支', pinyin: 'zhī', meaning: '一支笔', emoji: '✏️' },
+            { word: '件', pinyin: 'jiàn', meaning: '一件事', emoji: '📌' },
+            // ===== 关系词 =====
+            { word: '和', pinyin: 'hé', meaning: '我和你', emoji: '🤝' },
+            { word: '跟', pinyin: 'gēn', meaning: '跟我来', emoji: '👣' },
+            { word: '与', pinyin: 'yǔ', meaning: '你与我', emoji: '👥' },
+            { word: '但', pinyin: 'dàn', meaning: '但是', emoji: '💬' },
+            { word: '虽', pinyin: 'suī', meaning: '虽然', emoji: '💭' },
+            { word: '因', pinyin: 'yīn', meaning: '因为', emoji: '❓' },
+            { word: '所', pinyin: 'suǒ', meaning: '所以', emoji: '💡' },
+            { word: '如', pinyin: 'rú', meaning: '如果', emoji: '🔀' },
+            { word: '果', pinyin: 'guǒ', meaning: '如果', emoji: '🔀' },
+            { word: '只', pinyin: 'zhǐ', meaning: '只有', emoji: '1️⃣' },
+            // ===== 学校生活 =====
+            { word: '班', pinyin: 'bān', meaning: '班级', emoji: '🏫' },
+            { word: '级', pinyin: 'jí', meaning: '年级', emoji: '📊' },
+            { word: '考', pinyin: 'kǎo', meaning: '考试', emoji: '📝' },
+            { word: '试', pinyin: 'shì', meaning: '考试', emoji: '📋' },
+            { word: '题', pinyin: 'tí', meaning: '题目', emoji: '❓' },
+            { word: '练', pinyin: 'liàn', meaning: '练习', emoji: '✍️' },
+            { word: '习', pinyin: 'xí', meaning: '复习', emoji: '📖' },
+            { word: '复', pinyin: 'fù', meaning: '复习', emoji: '🔄' },
+            { word: '预', pinyin: 'yù', meaning: '预习', emoji: '👀' },
+            { word: '认', pinyin: 'rèn', meaning: '认字', emoji: '👁️' },
+            { word: '字', pinyin: 'zì', meaning: '汉字', emoji: '字' },
+            { word: '词', pinyin: 'cí', meaning: '词语', emoji: '📝' },
+            { word: '句', pinyin: 'jù', meaning: '句子', emoji: '💬' },
+            { word: '段', pinyin: 'duàn', meaning: '段落', emoji: '📄' },
+            { word: '文', pinyin: 'wén', meaning: '语文、文章', emoji: '📖' },
+            { word: '章', pinyin: 'zhāng', meaning: '文章', emoji: '📜' },
+            { word: '诗', pinyin: 'shī', meaning: '古诗', emoji: '🎭' },
+            { word: '歌', pinyin: 'gē', meaning: '歌曲', emoji: '🎵' },
+            { word: '讲', pinyin: 'jiǎng', meaning: '讲故事', emoji: '🗣️' },
+            { word: '故', pinyin: 'gù', meaning: '故事', emoji: '📚' },
+            { word: '事', pinyin: 'shì', meaning: '故事、事情', emoji: '📖' },
+            // ===== 社会生活 =====
+            { word: '社', pinyin: 'shè', meaning: '社会', emoji: '👥' },
+            { word: '会', pinyin: 'huì', meaning: '开会、会做', emoji: '🤝' },
+            { word: '工', pinyin: 'gōng', meaning: '工人', emoji: '👷' },
+            { word: '农', pinyin: 'nóng', meaning: '农民', emoji: '👨‍🌾' },
+            { word: '兵', pinyin: 'bīng', meaning: '士兵', emoji: '💂' },
+            { word: '医', pinyin: 'yī', meaning: '医生', emoji: '👨‍⚕️' },
+            { word: '院', pinyin: 'yuàn', meaning: '医院', emoji: '🏥' },
+            { word: '警', pinyin: 'jǐng', meaning: '警察', emoji: '👮' },
+            { word: '消', pinyin: 'xiāo', meaning: '消防员', emoji: '🚒' },
+            { word: '防', pinyin: 'fáng', meaning: '消防', emoji: '🔥' },
+            { word: '邮', pinyin: 'yóu', meaning: '邮局', emoji: '📮' },
+            { word: '局', pinyin: 'jú', meaning: '邮局', emoji: '🏢' },
+            { word: '图', pinyin: 'tú', meaning: '图书馆', emoji: '🖼️' },
+            { word: '博', pinyin: 'bó', meaning: '博物馆', emoji: '🏛️' },
+            // ===== 科学技术 =====
+            { word: '电', pinyin: 'diàn', meaning: '电灯、电话', emoji: '⚡' },
+            { word: '话', pinyin: 'huà', meaning: '说话、电话', emoji: '📞' },
+            { word: '脑', pinyin: 'nǎo', meaning: '电脑', emoji: '💻' },
+            { word: '机', pinyin: 'jī', meaning: '飞机、手机', emoji: '📱' },
+            { word: '网', pinyin: 'wǎng', meaning: '网络', emoji: '🌐' },
+            { word: '视', pinyin: 'shì', meaning: '电视', emoji: '📺' },
+            { word: '影', pinyin: 'yǐng', meaning: '电影', emoji: '🎬' },
+            { word: '照', pinyin: 'zhào', meaning: '照相机', emoji: '📷' },
+            { word: '相', pinyin: 'xiāng', meaning: '照相、相同', emoji: '📸' },
+            { word: '科', pinyin: 'kē', meaning: '科学', emoji: '🔬' },
+            { word: '技', pinyin: 'jì', meaning: '技术', emoji: '⚙️' },
+            { word: '术', pinyin: 'shù', meaning: '艺术、技术', emoji: '🎨' },
+            // ===== 情感状态 =====
+            { word: '乐', pinyin: 'lè', meaning: '快乐', emoji: '😄' },
+            { word: '悲', pinyin: 'bēi', meaning: '悲伤', emoji: '😢' },
+            { word: '怒', pinyin: 'nù', meaning: '生气', emoji: '😡' },
+            { word: '惊', pinyin: 'jīng', meaning: '吃惊', emoji: '😲' },
+            { word: '怕', pinyin: 'pà', meaning: '害怕', emoji: '😨' },
+            { word: '勇', pinyin: 'yǒng', meaning: '勇敢', emoji: '💪' },
+            { word: '敢', pinyin: 'gǎn', meaning: '勇敢', emoji: '🦁' },
+            { word: '急', pinyin: 'jí', meaning: '着急', emoji: '😰' },
+            { word: '静', pinyin: 'jìng', meaning: '安静', emoji: '🤫' },
+            { word: '累', pinyin: 'lèi', meaning: '累了', emoji: '😴' },
+            { word: '渴', pinyin: 'kě', meaning: '口渴', emoji: '💧' },
+            { word: '饿', pinyin: 'è', meaning: '肚子饿', emoji: '😋' },
+            // ===== 品德修养 =====
+            { word: '诚', pinyin: 'chéng', meaning: '诚实', emoji: '💎' },
+            { word: '实', pinyin: 'shí', meaning: '诚实', emoji: '✅' },
+            { word: '善', pinyin: 'shàn', meaning: '善良', emoji: '😇' },
+            { word: '勤', pinyin: 'qín', meaning: '勤奋', emoji: '📚' },
+            { word: '俭', pinyin: 'jiǎn', meaning: '勤俭', emoji: '💰' },
+            { word: '礼', pinyin: 'lǐ', meaning: '礼貌', emoji: '🙏' },
+            { word: '让', pinyin: 'ràng', meaning: '谦让', emoji: '🤝' },
+            { word: '孝', pinyin: 'xiào', meaning: '孝顺', emoji: '❤️' },
+            { word: '顺', pinyin: 'shùn', meaning: '孝顺', emoji: '🙏' },
+            { word: '忠', pinyin: 'zhōng', meaning: '忠诚', emoji: '⭐' },
+            { word: '信', pinyin: 'xìn', meaning: '信任', emoji: '🤝' },
+            { word: '义', pinyin: 'yì', meaning: '义气', emoji: '⚔️' },
+            // ===== 其他常用字 =====
+            { word: '当', pinyin: 'dāng', meaning: '当然', emoji: '✅' },
+            { word: '然', pinyin: 'rán', meaning: '当然', emoji: '💡' },
+            { word: '真', pinyin: 'zhēn', meaning: '真的', emoji: '💯' },
+            { word: '假', pinyin: 'jiǎ', meaning: '假的', emoji: '🎭' },
+            { word: '正', pinyin: 'zhèng', meaning: '正确', emoji: '✔️' },
+            { word: '反', pinyin: 'fǎn', meaning: '相反', emoji: '🔄' },
+            { word: '加', pinyin: 'jiā', meaning: '加法', emoji: '➕' },
+            { word: '减', pinyin: 'jiǎn', meaning: '减法', emoji: '➖' },
+            { word: '乘', pinyin: 'chéng', meaning: '乘法', emoji: '✖️' },
+            { word: '除', pinyin: 'chú', meaning: '除法', emoji: '➗' },
+            { word: '等', pinyin: 'děng', meaning: '等待、等于', emoji: '⏳' },
+            { word: '比', pinyin: 'bǐ', meaning: '比较', emoji: '⚖️' },
+            { word: '第', pinyin: 'dì', meaning: '第一名', emoji: '🥇' },
+            { word: '名', pinyin: 'míng', meaning: '名字', emoji: '📛' },
+            { word: '次', pinyin: 'cì', meaning: '第一次', emoji: '1️⃣' },
+            { word: '每', pinyin: 'měi', meaning: '每天', emoji: '📅' },
+            { word: '些', pinyin: 'xiē', meaning: '一些', emoji: '✨' },
+            { word: '种', pinyin: 'zhǒng', meaning: '种类、种树', emoji: '🌱' },
+            { word: '样', pinyin: 'yàng', meaning: '这样', emoji: '🔍' },
+            { word: '就', pinyin: 'jiù', meaning: '就是', emoji: '👈' },
+            { word: '已', pinyin: 'yǐ', meaning: '已经', emoji: '✅' },
+            { word: '经', pinyin: 'jīng', meaning: '已经', emoji: '📖' },
+            { word: '还', pinyin: 'hái', meaning: '还有', emoji: '➕' },
+            { word: '再', pinyin: 'zài', meaning: '再见、再来', emoji: '🔄' },
+            { word: '又', pinyin: 'yòu', meaning: '又来了', emoji: '🔄' },
+            { word: '先', pinyin: 'xiān', meaning: '先做、先生', emoji: '1️⃣' },
+            { word: '后', pinyin: 'hòu', meaning: '后来', emoji: '⏭️' },
+            { word: '可', pinyin: 'kě', meaning: '可以', emoji: '✅' },
+            { word: '以', pinyin: 'yǐ', meaning: '可以', emoji: '✅' },
+            { word: '能', pinyin: 'néng', meaning: '能做到', emoji: '💪' },
+            { word: '要', pinyin: 'yào', meaning: '要学习', emoji: '📌' },
+            { word: '会', pinyin: 'huì', meaning: '学会了', emoji: '🎓' },
+            { word: '得', pinyin: 'dé', meaning: '得到', emoji: '🎁' },
+            { word: '为', pinyin: 'wèi', meaning: '为什么', emoji: '❓' },
+            { word: '什', pinyin: 'shén', meaning: '什么', emoji: '❓' },
+            { word: '么', pinyin: 'me', meaning: '什么', emoji: '❓' },
+            { word: '谁', pinyin: 'shuí', meaning: '谁的', emoji: '❓' },
+            { word: '哪', pinyin: 'nǎ', meaning: '哪里', emoji: '❓' },
+            { word: '哪里', pinyin: 'nǎ lǐ', meaning: '在哪里', emoji: '📍' },
+            { word: '怎', pinyin: 'zěn', meaning: '怎么', emoji: '❓' },
+            { word: '样', pinyin: 'yàng', meaning: '怎么样', emoji: '❓' },
+            { word: '几', pinyin: 'jǐ', meaning: '几个', emoji: '🔢' },
+            { word: '多少', pinyin: 'duō shǎo', meaning: '多少个', emoji: '🔢' },
+            { word: '很', pinyin: 'hěn', meaning: '很好', emoji: '👍' },
+            { word: '太', pinyin: 'tài', meaning: '太棒了', emoji: '⭐' },
+            { word: '非', pinyin: 'fēi', meaning: '非常', emoji: '💯' },
+            { word: '常', pinyin: 'cháng', meaning: '非常、经常', emoji: '🔄' },
+            { word: '特', pinyin: 'tè', meaning: '特别', emoji: '⭐' },
+            { word: '别', pinyin: 'bié', meaning: '别走', emoji: '✋' },
+            { word: '只', pinyin: 'zhǐ', meaning: '只有一个', emoji: '1️⃣' },
+            { word: '全', pinyin: 'quán', meaning: '全部', emoji: '💯' },
+            { word: '部', pinyin: 'bù', meaning: '全部', emoji: '📦' },
+            { word: '共', pinyin: 'gòng', meaning: '共有', emoji: '🔢' },
+            { word: '总', pinyin: 'zǒng', meaning: '总共', emoji: '💯' },
+            { word: '最', pinyin: 'zuì', meaning: '最好', emoji: '🥇' },
+            { word: '更', pinyin: 'gèng', meaning: '更好', emoji: '⬆️' },
+            { word: '互', pinyin: 'hù', meaning: '互相', emoji: '🔄' },
+            { word: '相', pinyin: 'xiāng', meaning: '相互', emoji: '🔄' },
+            { word: '各', pinyin: 'gè', meaning: '各种', emoji: '🎨' },
+            { word: '另', pinyin: 'lìng', meaning: '另外', emoji: '➕' },
+            { word: '其', pinyin: 'qí', meaning: '其他', emoji: '💭' },
+            { word: '他', pinyin: 'tā', meaning: '其他', emoji: '💭' }
+        ];
+
+        // ========== 数据管理 ==========
+        function loadData() {
+            const savedEnglish = localStorage.getItem('customEnglish');
+            const savedChinese = localStorage.getItem('customChinese');
+            
+            window.englishWords = savedEnglish ? JSON.parse(savedEnglish) : [...defaultEnglish];
+            window.chineseWords = savedChinese ? JSON.parse(savedChinese) : [...defaultChinese];
+        }
+        loadData();
+
+        function saveData() {
+            localStorage.setItem('customEnglish', JSON.stringify(window.englishWords));
+            localStorage.setItem('customChinese', JSON.stringify(window.chineseWords));
+        }
+
+        // ========== 状态 ==========
+        let currentIndex = { english: 0, chinese: 0 };
+        let totalStars = parseInt(localStorage.getItem('totalStars') || '0');
+        let todayCount = parseInt(localStorage.getItem('todayCount') || '0');
+        let learningHistory = JSON.parse(localStorage.getItem('learningHistory') || '{}');
+        let reviewItems = [];
+        let reviewIndex = 0;
+        let reviewCorrect = 0;
+        let currentHistoryTab = 'english';
+
+        // 更新显示
+        function updateStats() {
+            document.getElementById('totalStars').textContent = totalStars;
+            document.getElementById('todayCount').textContent = todayCount;
+            
+            // 计算待复习数
+            let reviewTotal = 0;
+            for (let key in learningHistory) {
+                const item = learningHistory[key];
+                const daysSince = Math.floor((Date.now() - item.lastLearn) / (1000 * 60 * 60 * 24));
+                if (daysSince >= item.nextReview) {
+                    reviewTotal++;
+                }
+            }
+            document.getElementById('reviewCount').textContent = reviewTotal;
+        }
+        updateStats();
+
+        // ========== 页面导航 ==========
+        function openPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            if (pageId === 'englishPage') updateEnglishCard();
+            if (pageId === 'chinesePage') updateChineseCard();
+            if (pageId === 'mathPage') generateMath();
+            if (pageId === 'reviewPage') initReview();
+            if (pageId === 'historyPage') renderHistory();
+            if (pageId === 'adminPage') renderAdmin();
+        }
+
+        // ========== 英语卡片 ==========
+        function updateEnglishCard() {
+            const data = window.englishWords[currentIndex.english];
+            const emoji = document.getElementById('englishEmoji');
+            emoji.textContent = data.emoji;
+            emoji.style.animation = 'none';
+            emoji.offsetHeight;
+            emoji.style.animation = 'bounceIn 0.4s ease';
+            document.getElementById('englishWord').textContent = data.word;
+            document.getElementById('englishPinyin').textContent = data.pinyin;
+            document.getElementById('englishMeaning').textContent = data.meaning;
+        }
+
+        function nextCard(type) {
+            if (type === 'english') {
+                currentIndex.english = (currentIndex.english + 1) % window.englishWords.length;
+                updateEnglishCard();
+                recordLearn('e', window.englishWords[currentIndex.english === 0 ? window.englishWords.length - 1 : currentIndex.english - 1].word);
+            } else {
+                currentIndex.chinese = (currentIndex.chinese + 1) % window.chineseWords.length;
+                updateChineseCard();
+                recordLearn('c', window.chineseWords[currentIndex.chinese === 0 ? window.chineseWords.length - 1 : currentIndex.chinese - 1].word);
+            }
+        }
+
+        function prevCard(type) {
+            if (type === 'english') {
+                currentIndex.english = (currentIndex.english - 1 + window.englishWords.length) % window.englishWords.length;
+                updateEnglishCard();
+            } else {
+                currentIndex.chinese = (currentIndex.chinese - 1 + window.chineseWords.length) % window.chineseWords.length;
+                updateChineseCard();
+            }
+        }
+
+        function speakWord(type) {
+            const text = type === 'english' 
+                ? window.englishWords[currentIndex.english].word 
+                : window.chineseWords[currentIndex.chinese].word;
+            
+            if ('speechSynthesis' in window) {
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = type === 'english' ? 'en-US' : 'zh-CN';
+                u.rate = 0.8;
+                speechSynthesis.speak(u);
+            }
+        }
+
+        // ========== 语文卡片 ==========
+        function updateChineseCard() {
+            const data = window.chineseWords[currentIndex.chinese];
+            const emoji = document.getElementById('chineseEmoji');
+            emoji.textContent = data.emoji;
+            emoji.style.animation = 'none';
+            emoji.offsetHeight;
+            emoji.style.animation = 'bounceIn 0.4s ease';
+            document.getElementById('chineseWord').textContent = data.word;
+            document.getElementById('chinesePinyin').textContent = data.pinyin;
+            document.getElementById('chineseMeaning').textContent = data.meaning;
+        }
+
+        // ========== 学习记录 ==========
+        function recordLearn(type, word) {
+            const key = type + '_' + word;
+            const now = Date.now();
+            
+            if (learningHistory[key]) {
+                learningHistory[key].count++;
+                learningHistory[key].lastLearn = now;
+                // 艾宾浩斯记忆规律：1天、3天、7天、14天、30天
+                const intervals = [1, 3, 7, 14, 30];
+                const nextIdx = Math.min(learningHistory[key].count - 1, intervals.length - 1);
+                learningHistory[key].nextReview = intervals[nextIdx];
+            } else {
+                learningHistory[key] = {
+                    type, word, count: 1,
+                    lastLearn: now,
+                    nextReview: 1
+                };
+            }
+            
+            localStorage.setItem('learningHistory', JSON.stringify(learningHistory));
+            
+            todayCount++;
+            document.getElementById('todayCount').textContent = todayCount;
+            localStorage.setItem('todayCount', todayCount);
+            
+            // 每学5个得星星
+            if (todayCount % 5 === 0) {
+                addStar();
+            }
+            
+            updateStats();
+        }
+
+        function addStar() {
+            totalStars++;
+            localStorage.setItem('totalStars', totalStars);
+            document.getElementById('totalStars').textContent = totalStars;
+            showModal('⭐', '获得一颗星星！', '太棒了米和！');
+        }
+
+        // ========== 数学 ==========
+        let mathAnswer = 0;
+        function generateMath() {
+            const num1 = Math.floor(Math.random() * 10) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            const isAdd = Math.random() > 0.5;
+            
+            if (isAdd) {
+                mathAnswer = num1 + num2;
+                document.getElementById('mathEquation').textContent = `${num1} + ${num2} = ?`;
+            } else {
+                const [a, b] = num1 >= num2 ? [num1, num2] : [num2, num1];
+                mathAnswer = a - b;
+                document.getElementById('mathEquation').textContent = `${a} - ${b} = ?`;
+            }
+            document.getElementById('mathAnswer').value = '';
+            document.getElementById('mathAnswer').focus();
+        }
+
+        function checkMath() {
+            const ans = parseInt(document.getElementById('mathAnswer').value);
+            if (ans === mathAnswer) {
+                addStar();
+                todayCount++;
+                localStorage.setItem('todayCount', todayCount);
+                document.getElementById('todayCount').textContent = todayCount;
+                updateStats();
+                showModal('🎉', '答对啦！', '米和太聪明了！');
+                setTimeout(generateMath, 1500);
+            } else {
+                showModal('🤔', '再想想', '答案不对哦~');
+                document.getElementById('mathAnswer').value = '';
+                document.getElementById('mathAnswer').focus();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('mathAnswer')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') checkMath();
+            });
+        });
+
+        // ========== 复习模式 ==========
+        function initReview() {
+            reviewItems = [];
+            for (let key in learningHistory) {
+                const item = learningHistory[key];
+                const daysSince = Math.floor((Date.now() - item.lastLearn) / (1000 * 60 * 60 * 24));
+                if (daysSince >= item.nextReview || item.count < 3) {
+                    reviewItems.push(item);
+                }
+            }
+            
+            // 随机打乱
+            reviewItems.sort(() => Math.random() - 0.5);
+            reviewItems = reviewItems.slice(0, 10); // 最多10题
+            
+            reviewIndex = 0;
+            reviewCorrect = 0;
+            
+            document.getElementById('reviewTotal').textContent = reviewItems.length;
+            document.getElementById('reviewCurrent').textContent = '0';
+            document.getElementById('reviewCorrect').textContent = '0';
+            document.getElementById('reviewBarFill').style.width = '0%';
+            
+            if (reviewItems.length === 0) {
+                document.getElementById('reviewQuestion').textContent = '🎉 太棒了！';
+                document.getElementById('reviewHint').textContent = '目前没有需要复习的内容，继续学习新的吧！';
+                document.getElementById('reviewOptions').innerHTML = '';
+            } else {
+                showReviewQuestion();
+            }
+        }
+
+        function showReviewQuestion() {
+            if (reviewIndex >= reviewItems.length) {
+                // 复习完成
+                document.getElementById('reviewQuestion').textContent = '🎉 复习完成！';
+                document.getElementById('reviewHint').textContent = `正确率：${reviewCorrect}/${reviewItems.length}`;
+                document.getElementById('reviewOptions').innerHTML = `<button class="submit-btn" onclick="initReview()">再复习一遍</button>`;
+                return;
+            }
+            
+            const item = reviewItems[reviewIndex];
+            const allWords = item.type === 'e' ? window.englishWords : window.chineseWords;
+            
+            // 生成选项（1个正确+3个随机）
+            const options = [item.word];
+            const others = allWords.filter(w => w.word !== item.word);
+            while (options.length < 4 && others.length > 0) {
+                const idx = Math.floor(Math.random() * others.length);
+                options.push(others.splice(idx, 1)[0].word);
+            }
+            options.sort(() => Math.random() - 0.5);
+            
+            document.getElementById('reviewCurrent').textContent = reviewIndex + 1;
+            document.getElementById('reviewQuestion').textContent = item.type === 'e' ? '这个单词是什么意思？' : '这个字怎么读？';
+            document.getElementById('reviewHint').textContent = item.type === 'e' ? item.meaning : item.pinyin;
+            
+            document.getElementById('reviewOptions').innerHTML = options.map(opt => 
+                `<button class="quiz-option" onclick="checkReviewAnswer(this, '${opt}', '${item.word}')">${opt}</button>`
+            ).join('');
+        }
+
+        function checkReviewAnswer(btn, selected, correct) {
+            const btns = document.querySelectorAll('#reviewOptions .quiz-option');
+            btns.forEach(b => b.style.pointerEvents = 'none');
+            
+            if (selected === correct) {
+                btn.classList.add('correct');
+                reviewCorrect++;
+                document.getElementById('reviewCorrect').textContent = reviewCorrect;
+                
+                // 更新记忆记录
+                const key = Object.keys(learningHistory).find(k => learningHistory[k].word === correct);
+                if (key) {
+                    learningHistory[key].count++;
+                    learningHistory[key].lastLearn = Date.now();
+                    const intervals = [1, 3, 7, 14, 30];
+                    const nextIdx = Math.min(learningHistory[key].count - 1, intervals.length - 1);
+                    learningHistory[key].nextReview = intervals[nextIdx];
+                    localStorage.setItem('learningHistory', JSON.stringify(learningHistory));
+                }
+                
+                addStar();
+                todayCount++;
+                localStorage.setItem('todayCount', todayCount);
+                document.getElementById('todayCount').textContent = todayCount;
+                updateStats();
+            } else {
+                btn.classList.add('wrong');
+                btns.forEach(b => { if (b.textContent === correct) b.classList.add('correct'); });
+            }
+            
+            document.getElementById('reviewBarFill').style.width = ((reviewIndex + 1) / reviewItems.length * 100) + '%';
+            
+            setTimeout(() => {
+                reviewIndex++;
+                showReviewQuestion();
+            }, 1000);
+        }
+
+        // ========== 历史记录 ==========
+        function switchHistoryTab(tab, btn) {
+            currentHistoryTab = tab;
+            document.querySelectorAll('.top-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            const words = currentHistoryTab === 'english' ? window.englishWords : window.chineseWords;
+            const prefix = currentHistoryTab === 'english' ? 'e_' : 'c_';
+            
+            const historyItems = words.map(w => learningHistory[prefix + w.word]).filter(Boolean);
+            
+            if (historyItems.length === 0) {
+                list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📚</div><div class="empty-state-text">还没有学习记录哦~<br>快去学习吧！</div></div>`;
+                return;
+            }
+            
+            // 按学习次数排序
+            historyItems.sort((a, b) => b.count - a.count);
+            
+            list.innerHTML = historyItems.map(item => {
+                const wordData = words.find(w => w.word === item.word);
+                const daysAgo = Math.floor((Date.now() - item.lastLearn) / (1000 * 60 * 60 * 24));
+                return `
+                    <div class="history-item">
+                        <div class="history-left">
+                            <span class="history-emoji">${wordData?.emoji || '📝'}</span>
+                            <div>
+                                <div class="history-word">${item.word}</div>
+                                <div class="history-meta">${item.type === 'e' ? wordData?.meaning : wordData?.pinyin} · ${daysAgo === 0 ? '今天' : daysAgo + '天前'}</div>
+                            </div>
+                        </div>
+                        <div class="history-count">学了 ${item.count} 次</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ========== 家长管理 ==========
+        function renderAdmin() {
+            // 汉字列表
+            const chineseList = document.getElementById('chineseWordList');
+            chineseList.innerHTML = window.chineseWords.map(w => `
+                <div class="word-item">
+                    <div class="word-item-info">
+                        <span class="word-item-emoji">${w.emoji}</span>
+                        <span class="word-item-text">${w.word}</span>
+                    </div>
+                    <button class="word-item-delete" onclick="deleteWord('chinese', '${w.word}')">删除</button>
+                </div>
+            `).join('');
+            document.getElementById('chineseCount').textContent = window.chineseWords.length;
+            
+            // 单词列表
+            const englishList = document.getElementById('englishWordList');
+            englishList.innerHTML = window.englishWords.map(w => `
+                <div class="word-item">
+                    <div class="word-item-info">
+                        <span class="word-item-emoji">${w.emoji}</span>
+                        <span class="word-item-text">${w.word}</span>
+                    </div>
+                    <button class="word-item-delete" onclick="deleteWord('english', '${w.word}')">删除</button>
+                </div>
+            `).join('');
+            document.getElementById('englishCount').textContent = window.englishWords.length;
+            
+            // 快捷添加
+            const quickChars = ['的', '是', '在', '有', '我', '不', '了', '人'];
+            document.getElementById('quickAddGrid').innerHTML = quickChars.map(c => 
+                `<button class="quick-add-btn" onclick="quickAddChinese('${c}')">${c}</button>`
+            ).join('');
+        }
+
+        function quickAddChinese(char) {
+            const exists = window.chineseWords.find(w => w.word === char);
+            if (exists) {
+                showModal('ℹ️', '已存在', `"${char}"已经在学习列表里了~`);
+                return;
+            }
+            
+            window.chineseWords.push({ word: char, pinyin: '', meaning: '', emoji: '📝' });
+            saveData();
+            renderAdmin();
+            showModal('✅', '添加成功', `"${char}"已添加到学习列表！`);
+        }
+
+        function addChineseWord() {
+            const word = document.getElementById('addChineseWord').value.trim();
+            const pinyin = document.getElementById('addChinesePinyin').value.trim();
+            const emoji = document.getElementById('addChineseEmoji').value.trim() || '📝';
+            const meaning = document.getElementById('addChineseMeaning').value.trim() || '';
+            
+            if (!word) {
+                showModal('⚠️', '请输入汉字', '要添加的汉字不能为空~');
+                return;
+            }
+            
+            const exists = window.chineseWords.find(w => w.word === word);
+            if (exists) {
+                showModal('ℹ️', '已存在', `"${word}"已经在列表里了！`);
+                return;
+            }
+            
+            window.chineseWords.push({ word, pinyin, emoji, meaning });
+            saveData();
+            
+            // 清空表单
+            document.getElementById('addChineseWord').value = '';
+            document.getElementById('addChinesePinyin').value = '';
+            document.getElementById('addChineseEmoji').value = '';
+            document.getElementById('addChineseMeaning').value = '';
+            
+            renderAdmin();
+            showModal('✅', '添加成功', `"${word}"已添加！`);
+        }
+
+        function addEnglishWord() {
+            const word = document.getElementById('addEnglishWord').value.trim();
+            const pinyin = document.getElementById('addEnglishPinyin').value.trim();
+            const emoji = document.getElementById('addEnglishEmoji').value.trim() || '📝';
+            const meaning = document.getElementById('addEnglishMeaning').value.trim() || '';
+            
+            if (!word) {
+                showModal('⚠️', '请输入单词', '要添加的单词不能为空~');
+                return;
+            }
+            
+            const exists = window.englishWords.find(w => w.word.toLowerCase() === word.toLowerCase());
+            if (exists) {
+                showModal('ℹ️', '已存在', `"${word}"已经在列表里了！`);
+                return;
+            }
+            
+            window.englishWords.push({ word, pinyin, emoji, meaning });
+            saveData();
+            
+            document.getElementById('addEnglishWord').value = '';
+            document.getElementById('addEnglishPinyin').value = '';
+            document.getElementById('addEnglishEmoji').value = '';
+            document.getElementById('addEnglishMeaning').value = '';
+            
+            renderAdmin();
+            showModal('✅', '添加成功', `"${word}"已添加！`);
+        }
+
+        function deleteWord(type, word) {
+            if (!confirm(`确定要删除"${word}"吗？`)) return;
+            
+            if (type === 'chinese') {
+                window.chineseWords = window.chineseWords.filter(w => w.word !== word);
+            } else {
+                window.englishWords = window.englishWords.filter(w => w.word !== word);
+            }
+            saveData();
+            renderAdmin();
+            showModal('🗑️', '已删除', `"${word}"已从列表移除`);
+        }
+
+        function clearAllData() {
+            if (!confirm('确定要清空所有学习记录吗？\n这会清除星星、学习历史等内容，但保留您添加的字词。')) return;
+            
+            localStorage.removeItem('learningHistory');
+            localStorage.removeItem('todayCount');
+            localStorage.removeItem('totalStars');
+            
+            totalStars = 0;
+            todayCount = 0;
+            learningHistory = {};
+            
+            updateStats();
+            showModal('🧹', '已清空', '所有学习记录已清除');
+        }
+
+        // ========== 弹窗 ==========
+        function showModal(icon, title, text) {
+            document.getElementById('modalIcon').textContent = icon;
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalText').textContent = text;
+            document.getElementById('successModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').classList.remove('show');
+        }
+
+        // ========== PWA 安装 ==========
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installBtn').classList.add('show');
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choice) => {
+                    if (choice.outcome === 'accepted') {
+                        showModal('📱', '安装成功！', '米和的学习乐园已添加到桌面~');
+                    }
+                    deferredPrompt = null;
+                    document.getElementById('installBtn').classList.remove('show');
+                });
+            } else {
+                showModal('ℹ️', '提示', '在手机浏览器中打开，然后点击"添加到主屏幕"即可~');
+            }
+        }
+
+        // ========== 每日重置 ==========
+        function checkDate() {
+            const lastDate = localStorage.getItem('lastDate');
+            const today = new Date().toDateString();
+            if (lastDate !== today) {
+                localStorage.setItem('todayCount', '0');
+                localStorage.setItem('lastDate', today);
+                todayCount = 0;
+                document.getElementById('todayCount').textContent = '0';
+            }
+        }
+        checkDate();
+    </script>
+</body>
+</html>
