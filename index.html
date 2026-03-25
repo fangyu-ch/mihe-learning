@@ -1054,7 +1054,7 @@
             { word: '还', pinyin: 'hái', meaning: '还有', emoji: '➕' },
             { word: '再', pinyin: 'zài', meaning: '再见、再来', emoji: '🔄' },
             { word: '又', pinyin: 'yòu', meaning: '又来了', emoji: '🔄' },
-            { word: '先', pinyin: 'xiān', meaning: '先做、先生', emoji: '1️⃣' },
+            { word: '先', pinyin: 'xiān', meaning: '先做，先生', emoji: '1️⃣' },
             { word: '后', pinyin: 'hòu', meaning: '后来', emoji: '⏭️' },
             { word: '可', pinyin: 'kě', meaning: '可以', emoji: '✅' },
             { word: '以', pinyin: 'yǐ', meaning: '可以', emoji: '✅' },
@@ -1184,17 +1184,93 @@
             }
         }
 
+        // 当前播放的音频
+        let currentAudio = null;
+
         function speakWord(type) {
             const text = type === 'english' 
                 ? window.englishWords[currentIndex.english].word 
                 : window.chineseWords[currentIndex.chinese].word;
             
-            if ('speechSynthesis' in window) {
-                const u = new SpeechSynthesisUtterance(text);
-                u.lang = type === 'english' ? 'en-US' : 'zh-CN';
-                u.rate = 0.8;
-                speechSynthesis.speak(u);
+            if (type === 'english') {
+                // 英文：优先用有道词典发音（国内可用）
+                playEnglishAudio(text);
+            } else {
+                // 中文：优先用 Web Speech API，失败则用百度TTS
+                playChineseAudio(text);
             }
+        }
+
+        // 英文发音：有道词典（国内访问流畅）
+        function playEnglishAudio(word) {
+            if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+            // 有道词典发音接口（英式/美式）
+            const urls = [
+                `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(word)}&type=2`, // 美式
+                `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(word)}&type=1`, // 英式
+            ];
+            tryAudioUrls(urls, 0);
+        }
+
+        // 中文发音：Web Speech API（安卓/鸿蒙系统级支持）
+        function playChineseAudio(text) {
+            // 先尝试 Web Speech API
+            if ('speechSynthesis' in window) {
+                speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = 'zh-CN';
+                u.rate = 0.85;
+                u.pitch = 1.1;
+                // 等待语音列表加载
+                const trySpeak = () => {
+                    const voices = speechSynthesis.getVoices();
+                    // 优先选中文语音
+                    const zhVoice = voices.find(v => v.lang.startsWith('zh') || v.lang.startsWith('cmn'));
+                    if (zhVoice) u.voice = zhVoice;
+                    speechSynthesis.speak(u);
+                    // 1.5秒没开始说，说明语音引擎没启动，用备用
+                    const timer = setTimeout(() => {
+                        if (!speechSynthesis.speaking) {
+                            playChineseBackup(text);
+                        }
+                    }, 1500);
+                    u.onstart = () => clearTimeout(timer);
+                    u.onerror = () => { clearTimeout(timer); playChineseBackup(text); };
+                };
+                if (speechSynthesis.getVoices().length > 0) {
+                    trySpeak();
+                } else {
+                    speechSynthesis.onvoiceschanged = trySpeak;
+                    // 300ms后如果还没voices，直接尝试
+                    setTimeout(() => {
+                        if (speechSynthesis.getVoices().length === 0) trySpeak();
+                    }, 300);
+                }
+            } else {
+                playChineseBackup(text);
+            }
+        }
+
+        // 中文备用：百度翻译TTS（国内可用）
+        function playChineseBackup(text) {
+            if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+            const urls = [
+                `https://fanyi.baidu.com/gettts?lan=zh&text=${encodeURIComponent(text)}&spd=3&source=web`,
+            ];
+            tryAudioUrls(urls, 0);
+        }
+
+        // 依次尝试多个音频地址
+        function tryAudioUrls(urls, index) {
+            if (index >= urls.length) return;
+            const audio = new Audio();
+            audio.crossOrigin = 'anonymous';
+            currentAudio = audio;
+            audio.src = urls[index];
+            audio.play().catch(() => {
+                // 当前地址失败，尝试下一个
+                tryAudioUrls(urls, index + 1);
+            });
         }
 
         // ========== 语文卡片 ==========
@@ -1347,7 +1423,10 @@
             options.sort(() => Math.random() - 0.5);
             
             document.getElementById('reviewCurrent').textContent = reviewIndex + 1;
-            document.getElementById('reviewQuestion').textContent = item.type === 'e' ? '这个单词是什么意思？' : '这个字怎么读？';
+            // 显示要复习的字/词
+            document.getElementById('reviewQuestion').innerHTML = item.type === 'e' 
+                ? `<div style="font-size:48px;margin:20px 0;">${item.word}</div><div style="color:#666;">这个单词是什么意思？</div>`
+                : `<div style="font-size:64px;margin:20px 0;color:#0288D1;">${item.word}</div>`;
             document.getElementById('reviewHint').textContent = item.type === 'e' ? item.meaning : item.pinyin;
             
             document.getElementById('reviewOptions').innerHTML = options.map(opt => 
