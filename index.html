@@ -1108,7 +1108,9 @@
         }
 
         // ========== 状态 ==========
-        let currentIndex = { english: 0, chinese: 0 };
+        // 读取上次学习进度（如果没有则从0开始）
+        let savedIndex = JSON.parse(localStorage.getItem('currentIndex') || '{"english":0,"chinese":0}');
+        let currentIndex = { english: savedIndex.english || 0, chinese: savedIndex.chinese || 0 };
         let totalStars = parseInt(localStorage.getItem('totalStars') || '0');
         let todayCount = parseInt(localStorage.getItem('todayCount') || '0');
         let learningHistory = JSON.parse(localStorage.getItem('learningHistory') || '{}');
@@ -1116,6 +1118,10 @@
         let reviewIndex = 0;
         let reviewCorrect = 0;
         let currentHistoryTab = 'english';
+
+        // 初始化时显示上次学习进度
+        updateEnglishCard();
+        updateChineseCard();
 
         // 更新显示
         function updateStats() {
@@ -1171,6 +1177,7 @@
                 updateChineseCard();
                 recordLearn('c', window.chineseWords[currentIndex.chinese === 0 ? window.chineseWords.length - 1 : currentIndex.chinese - 1].word);
             }
+            localStorage.setItem('currentIndex', JSON.stringify(currentIndex));
         }
 
         function prevCard(type) {
@@ -1181,6 +1188,7 @@
                 currentIndex.chinese = (currentIndex.chinese - 1 + window.chineseWords.length) % window.chineseWords.length;
                 updateChineseCard();
             }
+            localStorage.setItem('currentIndex', JSON.stringify(currentIndex));
         }
 
         // 当前播放的音频
