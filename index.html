@@ -547,6 +547,10 @@
                 <button class="quiz-speak-btn" onclick="imgQuizSpeak()" id="imgQuizSpeakBtn">🔊 听发音</button>
                 <div class="quiz-options" id="imgQuizOptions"></div>
             </div>
+            <!-- 再来一轮按钮放在卡片外面，不会被 innerHTML 替换掉 -->
+            <div id="imgQuizRestartWrap" style="display:none; text-align:center; margin-top:16px;">
+                <button class="submit-btn" onclick="initImgQuiz()">再来一轮 🔄</button>
+            </div>
         </div>
     </div>
 
@@ -575,6 +579,10 @@
                 </button>
                 <div class="quiz-hint" id="soundQuizHint">先听发音，再选字哦！</div>
                 <div class="quiz-options" id="soundQuizOptions"></div>
+            </div>
+            <!-- 再来一轮按钮放在卡片外面，不会被 innerHTML 替换掉 -->
+            <div id="soundQuizRestartWrap" style="display:none; text-align:center; margin-top:16px;">
+                <button class="submit-btn" onclick="initSoundQuiz()">再来一轮 🔄</button>
             </div>
         </div>
     </div>
@@ -1663,6 +1671,7 @@
             document.getElementById('imgQuizCurrent').textContent = '0';
             document.getElementById('imgQuizCorrect').textContent = '0';
             document.getElementById('imgQuizBar').style.width = '0%';
+            document.getElementById('imgQuizRestartWrap').style.display = 'none';
             
             if (imgQuizItems.length === 0) {
                 showImgQuizEmpty();
@@ -1713,9 +1722,14 @@
         }
 
         function imgQuizSpeak() {
-            if (imgQuizItems.length === 0) return;
+            if (imgQuizItems.length === 0 || imgQuizIndex >= imgQuizItems.length) return;
             const item = imgQuizItems[imgQuizIndex];
-            speakWord(imgQuizType);
+            // 直接用 quiz 类型对应的发音方式，而不是依赖 currentIndex
+            if (imgQuizType === 'english') {
+                playEnglishAudio(item.word);
+            } else {
+                playChineseAudio(item.word);
+            }
         }
 
         function checkImgQuizAnswer(btn, selected, correct) {
@@ -1764,8 +1778,8 @@
                     <div class="quiz-complete-score">${score}/${total}</div>
                     <div class="quiz-complete-label">正确率 ${pct}%</div>
                     <div class="quiz-complete-msg">${msg}</div>
-                    <button class="submit-btn" onclick="initImgQuiz()">再来一轮 🔄</button>
                 </div>`;
+            document.getElementById('imgQuizRestartWrap').style.display = 'block';
         }
 
         // ========== 听音选字 ==========
@@ -1802,6 +1816,7 @@
             document.getElementById('soundQuizCurrent').textContent = '0';
             document.getElementById('soundQuizCorrect').textContent = '0';
             document.getElementById('soundQuizBar').style.width = '0%';
+            document.getElementById('soundQuizRestartWrap').style.display = 'none';
             
             if (soundQuizItems.length === 0) {
                 showSoundQuizEmpty();
@@ -1917,8 +1932,8 @@
                     <div class="quiz-complete-score">${score}/${total}</div>
                     <div class="quiz-complete-label">正确率 ${pct}%</div>
                     <div class="quiz-complete-msg">${msg}</div>
-                    <button class="submit-btn" onclick="initSoundQuiz()">再来一轮 🔄</button>
                 </div>`;
+            document.getElementById('soundQuizRestartWrap').style.display = 'block';
         }
 
         // 星星爆发特效
