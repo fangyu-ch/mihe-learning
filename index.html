@@ -432,25 +432,10 @@
                 <div class="module-title">数学练习</div>
                 <div class="module-desc">加减法计算</div>
             </div>
-            <div class="module-card review" onclick="openPage('reviewPage')">
+            <div class="module-card quiz-img" onclick="openPage('quizPage')">
                 <div class="module-icon">🎯</div>
-                <div class="module-title">抽查复习</div>
-                <div class="module-desc">巩固已学内容</div>
-            </div>
-            <div class="module-card history" onclick="openPage('historyPage')">
-                <div class="module-icon">📖</div>
-                <div class="module-title">学习记录</div>
-                <div class="module-desc">查看学习历史</div>
-            </div>
-            <div class="module-card quiz-img" onclick="openPage('quizImagePage'); initImgQuiz()">
-                <div class="module-icon">🖼️</div>
-                <div class="module-title">看图选字</div>
-                <div class="module-desc">图猜字有意思</div>
-            </div>
-            <div class="module-card quiz-sound" onclick="openPage('quizSoundPage'); initSoundQuiz()">
-                <div class="module-icon">👂</div>
-                <div class="module-title">听音选字</div>
-                <div class="module-desc">听声音选答案</div>
+                <div class="module-title">练习测验</div>
+                <div class="module-desc">看图 · 听音 · 抽查</div>
             </div>
             <div class="module-card admin" onclick="openPage('adminPage')">
                 <div class="module-icon">📖</div>
@@ -522,57 +507,41 @@
         </div>
     </div>
 
-    <!-- ========== 看图选字 ========== -->
-    <div id="quizImagePage" class="page">
+    <!-- ========== 练习测验（合并版：看图/听音/抽查） ========== -->
+    <div id="quizPage" class="page">
         <button class="back-btn" onclick="openPage('homePage')">← 返回主页</button>
         
-        <div class="quiz-type-tabs">
-            <button class="quiz-tab active" onclick="switchQuizType('english', this)" id="quizTabEnglish">🇬🇧 英语</button>
-            <button class="quiz-tab" onclick="switchQuizType('chinese', this)" id="quizTabChinese">🈷️ 汉字</button>
+        <div class="quiz-type-tabs" id="quizModeTabs">
+            <button class="quiz-tab active" onclick="switchQuizMode('img', this)">🖼️ 看图选字</button>
+            <button class="quiz-tab" onclick="switchQuizMode('sound', this)">👂 听音选字</button>
+            <button class="quiz-tab" onclick="switchQuizMode('review', this)">🎯 抽查复习</button>
         </div>
         
-        <div class="review-progress">
-            <div class="review-bar"><div class="review-bar-fill" id="imgQuizBar" style="width:0%"></div></div>
+        <!-- 三个测验共用同一个进度条，ID分别对应各自的JS变量 -->
+        <div class="review-progress" id="quizProgress">
+            <div class="review-bar">
+                <div class="review-bar-fill" id="imgQuizBar" style="width:0%;display:none;"></div>
+                <div class="review-bar-fill" id="soundQuizBar" style="width:0%;display:none;"></div>
+                <div class="review-bar-fill" id="reviewBarFill" style="width:0%;"></div>
+            </div>
             <div class="review-stats">
-                <span>进度: <span id="imgQuizCurrent">0</span>/<span id="imgQuizTotal">0</span></span>
-                <span>正确: <span id="imgQuizCorrect">0</span></span>
+                <span id="imgQuizStats" style="display:none;">进度: <span id="imgQuizCurrent">0</span>/<span id="imgQuizTotal">0</span> 正确: <span id="imgQuizCorrect">0</span></span>
+                <span id="soundQuizStats" style="display:none;">进度: <span id="soundQuizCurrent">0</span>/<span id="soundQuizTotal">0</span> 正确: <span id="soundQuizCorrect">0</span></span>
+                <span id="reviewStats">进度: <span id="reviewCurrent">0</span>/<span id="reviewTotal">0</span> 正确: <span id="reviewCorrect">0</span></span>
             </div>
         </div>
 
         <div class="quiz-container" style="max-width:500px;margin:0 auto;">
-            <div class="quiz-card" id="imgQuizCard">
+            <!-- ===== 看图选字卡片 ===== -->
+            <div class="quiz-card" id="imgQuizCard" style="display:none;">
                 <div class="quiz-type-prompt" id="imgQuizPrompt">这是什么动物？</div>
                 <div class="quiz-emoji-display" id="imgQuizEmoji">🐱</div>
                 <div class="quiz-hint" id="imgQuizHint">选出发音吧！</div>
                 <button class="quiz-speak-btn" onclick="imgQuizSpeak()" id="imgQuizSpeakBtn">🔊 听发音</button>
                 <div class="quiz-options" id="imgQuizOptions"></div>
             </div>
-            <!-- 再来一轮按钮放在卡片外面，不会被 innerHTML 替换掉 -->
-            <div id="imgQuizRestartWrap" style="display:none; text-align:center; margin-top:16px;">
-                <button class="submit-btn" onclick="initImgQuiz()">再来一轮 🔄</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ========== 听音选字 ========== -->
-    <div id="quizSoundPage" class="page">
-        <button class="back-btn" onclick="openPage('homePage')">← 返回主页</button>
-        
-        <div class="quiz-type-tabs">
-            <button class="quiz-tab active" onclick="switchSoundQuizType('english', this)" id="soundQuizTabEnglish">🇬🇧 英语</button>
-            <button class="quiz-tab" onclick="switchSoundQuizType('chinese', this)" id="soundQuizTabChinese">🈷️ 汉字</button>
-        </div>
-        
-        <div class="review-progress">
-            <div class="review-bar"><div class="review-bar-fill" id="soundQuizBar" style="width:0%"></div></div>
-            <div class="review-stats">
-                <span>进度: <span id="soundQuizCurrent">0</span>/<span id="soundQuizTotal">0</span></span>
-                <span>正确: <span id="soundQuizCorrect">0</span></span>
-            </div>
-        </div>
-
-        <div class="quiz-container" style="max-width:500px;margin:0 auto;">
-            <div class="quiz-card" id="soundQuizCard">
+            <!-- ===== 听音选字卡片 ===== -->
+            <div class="quiz-card" id="soundQuizCard" style="display:none;">
                 <div class="quiz-type-prompt">听一听，选出正确的答案</div>
                 <button class="quiz-sound-big-btn" onclick="playSoundQuiz()" id="soundQuizPlayBtn">
                     <span id="soundQuizPlayText">🔊 点击听发音</span>
@@ -580,30 +549,15 @@
                 <div class="quiz-hint" id="soundQuizHint">先听发音，再选字哦！</div>
                 <div class="quiz-options" id="soundQuizOptions"></div>
             </div>
-            <!-- 再来一轮按钮放在卡片外面，不会被 innerHTML 替换掉 -->
-            <div id="soundQuizRestartWrap" style="display:none; text-align:center; margin-top:16px;">
-                <button class="submit-btn" onclick="initSoundQuiz()">再来一轮 🔄</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ========== 抽查复习 ========== -->
-    <div id="reviewPage" class="page">
-        <button class="back-btn" onclick="openPage('homePage')">← 返回主页</button>
-        
-        <div class="review-progress">
-            <div class="review-bar"><div class="review-bar-fill" id="reviewBarFill" style="width:0%"></div></div>
-            <div class="review-stats">
-                <span>进度: <span id="reviewCurrent">0</span>/<span id="reviewTotal">0</span></span>
-                <span>正确: <span id="reviewCorrect">0</span></span>
-            </div>
-        </div>
-
-        <div class="quiz-container" style="max-width:500px;margin:0 auto;">
+            <!-- ===== 抽查复习卡片 ===== -->
             <div class="quiz-card" id="reviewQuizCard">
                 <div class="quiz-question" id="reviewQuestion">准备好了吗？</div>
                 <div class="quiz-hint" id="reviewHint">点击开始抽查！</div>
                 <div class="quiz-options" id="reviewOptions"></div>
+            </div>
+            <!-- 再来一轮按钮统一放在卡片外面 -->
+            <div id="quizRestartWrap" style="display:none; text-align:center; margin-top:16px;">
+                <button class="submit-btn" onclick="restartCurrentQuiz()">再来一轮 🔄</button>
             </div>
         </div>
     </div>
@@ -1293,7 +1247,6 @@
             if (pageId === 'englishPage') updateEnglishCard();
             if (pageId === 'chinesePage') updateChineseCard();
             if (pageId === 'mathPage') generateMath();
-            if (pageId === 'reviewPage') initReview();
             if (pageId === 'historyPage') renderHistory();
             if (pageId === 'adminPage') renderAdmin();
         }
@@ -1567,8 +1520,10 @@
                 document.getElementById('reviewHint').innerHTML = `
                     <div style="font-size:2.5rem;font-weight:700;color:var(--elsa-dark);">${reviewCorrect}/${reviewItems.length}</div>
                     <div style="color:#888;">${msg}</div>`;
-                document.getElementById('reviewOptions').innerHTML = `<button class="submit-btn" onclick="initReview()">再来一轮 🔄</button>`;
+                document.getElementById('reviewOptions').innerHTML = '';
+                document.getElementById('reviewRestartWrap').style.display = 'block';
                 return;
+            }
             }
             
             const item = reviewItems[reviewIndex];
@@ -1635,25 +1590,64 @@
             }, 1000);
         }
 
+        // ========== 统一测验模式切换 ==========
+        let currentQuizMode = 'img'; // 'img' | 'sound' | 'review'
+
+        function switchQuizMode(mode, btn) {
+            // 更新标签高亮
+            document.querySelectorAll('#quizModeTabs .quiz-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+
+            // 隐藏所有卡片和统计
+            document.getElementById('imgQuizCard').style.display = 'none';
+            document.getElementById('soundQuizCard').style.display = 'none';
+            document.getElementById('reviewQuizCard').style.display = 'none';
+            document.getElementById('imgQuizStats').style.display = 'none';
+            document.getElementById('soundQuizStats').style.display = 'none';
+            document.getElementById('reviewStats').style.display = 'none';
+            document.getElementById('imgQuizBar').style.display = 'none';
+            document.getElementById('soundQuizBar').style.display = 'none';
+            document.getElementById('reviewBarFill').style.display = 'none';
+            document.getElementById('quizRestartWrap').style.display = 'none';
+
+            currentQuizMode = mode;
+
+            if (mode === 'img') {
+                document.getElementById('imgQuizCard').style.display = 'block';
+                document.getElementById('imgQuizStats').style.display = 'inline';
+                document.getElementById('imgQuizBar').style.display = 'block';
+                initImgQuiz();
+            } else if (mode === 'sound') {
+                document.getElementById('soundQuizCard').style.display = 'block';
+                document.getElementById('soundQuizStats').style.display = 'inline';
+                document.getElementById('soundQuizBar').style.display = 'block';
+                initSoundQuiz();
+            } else {
+                document.getElementById('reviewQuizCard').style.display = 'block';
+                document.getElementById('reviewStats').style.display = 'inline';
+                document.getElementById('reviewBarFill').style.display = 'block';
+                initReview();
+            }
+        }
+
+        function restartCurrentQuiz() {
+            if (currentQuizMode === 'img') initImgQuiz();
+            else if (currentQuizMode === 'sound') initSoundQuiz();
+            else initReview();
+        }
+
         // ========== 看图选字 ==========
-        let imgQuizType = 'english';
         let imgQuizItems = [];
         let imgQuizIndex = 0;
         let imgQuizCorrect = 0;
         let imgQuizAnswered = false;
 
-        function switchQuizType(type, btn) {
-            imgQuizType = type;
-            document.querySelectorAll('.quiz-type-tabs .quiz-tab').forEach(t => t.classList.remove('active'));
-            btn.classList.add('active');
-            initImgQuiz();
-        }
-
         function initImgQuiz() {
-            const words = imgQuizType === 'english' ? window.englishWords : window.chineseWords;
-            // 从学习记录中选，如果太少就用全部
+            // 每次随机选择英文或中文
+            const isEnglish = Math.random() > 0.5;
+            const words = isEnglish ? window.englishWords : window.chineseWords;
             let pool = [];
-            const prefix = imgQuizType === 'english' ? 'e_' : 'c_';
+            const prefix = isEnglish ? 'e_' : 'c_';
             for (let key in learningHistory) {
                 if (key.startsWith(prefix)) {
                     pool.push(learningHistory[key]);
@@ -1661,7 +1655,6 @@
             }
             if (pool.length < 4) pool = words.slice(0, Math.min(words.length, 10));
             
-            // 随机选5-10题
             pool.sort(() => Math.random() - 0.5);
             imgQuizItems = pool.slice(0, Math.min(pool.length, 8));
             imgQuizIndex = 0;
@@ -1671,7 +1664,7 @@
             document.getElementById('imgQuizCurrent').textContent = '0';
             document.getElementById('imgQuizCorrect').textContent = '0';
             document.getElementById('imgQuizBar').style.width = '0%';
-            document.getElementById('imgQuizRestartWrap').style.display = 'none';
+            document.getElementById('quizRestartWrap').style.display = 'none';
             
             if (imgQuizItems.length === 0) {
                 showImgQuizEmpty();
@@ -1696,14 +1689,15 @@
             }
             imgQuizAnswered = false;
             const item = imgQuizItems[imgQuizIndex];
-            const allWords = imgQuizType === 'english' ? window.englishWords : window.chineseWords;
+            const isEnglish = item.type === 'e';
+            const allWords = isEnglish ? window.englishWords : window.chineseWords;
             
             document.getElementById('imgQuizCurrent').textContent = imgQuizIndex + 1;
-            document.getElementById('imgQuizEmoji').textContent = item.emoji;
+            document.getElementById('imgQuizEmoji').textContent = item.emoji || (isEnglish ? '❓' : '字');
             document.getElementById('imgQuizEmoji').style.animation = 'none';
             setTimeout(() => { document.getElementById('imgQuizEmoji').style.animation = 'bounceIn 0.4s ease'; }, 10);
             
-            document.getElementById('imgQuizPrompt').textContent = imgQuizType === 'english' 
+            document.getElementById('imgQuizPrompt').textContent = isEnglish 
                 ? '这是什么动物？选出发音吧！' 
                 : '这是什么字？';
             
@@ -1724,8 +1718,8 @@
         function imgQuizSpeak() {
             if (imgQuizItems.length === 0 || imgQuizIndex >= imgQuizItems.length) return;
             const item = imgQuizItems[imgQuizIndex];
-            // 直接用 quiz 类型对应的发音方式，而不是依赖 currentIndex
-            if (imgQuizType === 'english') {
+            // 根据当前题目的类型选择发音方式
+            if (item.type === 'e') {
                 playEnglishAudio(item.word);
             } else {
                 playChineseAudio(item.word);
@@ -1779,27 +1773,21 @@
                     <div class="quiz-complete-label">正确率 ${pct}%</div>
                     <div class="quiz-complete-msg">${msg}</div>
                 </div>`;
-            document.getElementById('imgQuizRestartWrap').style.display = 'block';
+            document.getElementById('quizRestartWrap').style.display = 'block';
         }
 
         // ========== 听音选字 ==========
-        let soundQuizType = 'english';
         let soundQuizItems = [];
         let soundQuizIndex = 0;
         let soundQuizCorrect = 0;
         let soundQuizAnswered = false;
 
-        function switchSoundQuizType(type, btn) {
-            soundQuizType = type;
-            document.querySelectorAll('#quizSoundPage .quiz-type-tabs .quiz-tab').forEach(t => t.classList.remove('active'));
-            btn.classList.add('active');
-            initSoundQuiz();
-        }
-
         function initSoundQuiz() {
-            const words = soundQuizType === 'english' ? window.englishWords : window.chineseWords;
+            // 每次随机选择英文或中文
+            const isEnglish = Math.random() > 0.5;
+            const words = isEnglish ? window.englishWords : window.chineseWords;
             let pool = [];
-            const prefix = soundQuizType === 'english' ? 'e_' : 'c_';
+            const prefix = isEnglish ? 'e_' : 'c_';
             for (let key in learningHistory) {
                 if (key.startsWith(prefix)) {
                     pool.push(learningHistory[key]);
@@ -1816,7 +1804,7 @@
             document.getElementById('soundQuizCurrent').textContent = '0';
             document.getElementById('soundQuizCorrect').textContent = '0';
             document.getElementById('soundQuizBar').style.width = '0%';
-            document.getElementById('soundQuizRestartWrap').style.display = 'none';
+            document.getElementById('quizRestartWrap').style.display = 'none';
             
             if (soundQuizItems.length === 0) {
                 showSoundQuizEmpty();
@@ -1841,7 +1829,8 @@
             }
             soundQuizAnswered = false;
             const item = soundQuizItems[soundQuizIndex];
-            const allWords = soundQuizType === 'english' ? window.englishWords : window.chineseWords;
+            const isEnglish = item.type === 'e';
+            const allWords = isEnglish ? window.englishWords : window.chineseWords;
             
             document.getElementById('soundQuizCurrent').textContent = soundQuizIndex + 1;
             
@@ -1864,22 +1853,12 @@
         function playSoundQuiz() {
             if (soundQuizAnswered || soundQuizItems.length === 0) return;
             const item = soundQuizItems[soundQuizIndex];
-            
-            // 临时切换 currentIndex 来播放正确的发音
-            const savedEnglish = currentIndex.english;
-            const savedChinese = currentIndex.chinese;
-            const wordList = soundQuizType === 'english' ? window.englishWords : window.chineseWords;
-            const findIdx = wordList.findIndex(w => w.word === item.word);
-            if (findIdx !== -1) {
-                if (soundQuizType === 'english') currentIndex.english = findIdx;
-                else currentIndex.chinese = findIdx;
+            // 根据当前题目类型直接播放
+            if (item.type === 'e') {
+                playEnglishAudio(item.word);
+            } else {
+                playChineseAudio(item.word);
             }
-            
-            speakWord(soundQuizType);
-            
-            // 恢复
-            if (soundQuizType === 'english') currentIndex.english = savedEnglish;
-            else currentIndex.chinese = savedChinese;
             
             document.getElementById('soundQuizPlayBtn').style.animation = 'none';
             document.getElementById('soundQuizHint').textContent = '听到了吗？选一个吧！';
@@ -1933,7 +1912,7 @@
                     <div class="quiz-complete-label">正确率 ${pct}%</div>
                     <div class="quiz-complete-msg">${msg}</div>
                 </div>`;
-            document.getElementById('soundQuizRestartWrap').style.display = 'block';
+            document.getElementById('quizRestartWrap').style.display = 'block';
         }
 
         // 星星爆发特效
