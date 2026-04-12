@@ -1305,52 +1305,72 @@
             }
         }
 
-        // 英文发音：有道词典（国内访问流畅）
+        // 英文发音：百度翻译TTS（国内访问流畅）
+        // 首次点击用百度TTS，播放中再次点击则切换到有道词典
+        let englishUseBackup = false; // false=百度TTS, true=有道词典
         function playEnglishAudio(word) {
-            if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-            // 有道词典发音接口（英式/美式）
-            const urls = [
-                `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(word)}&type=2`, // 美式
-                `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(word)}&type=1`, // 英式
-            ];
-            tryAudioUrls(urls, 0);
+            // 停止当前音频
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.src = '';
+                currentAudio = null;
+                englishUseBackup = !englishUseBackup; // 切换发音
+            }
+            
+            if (englishUseBackup) {
+                // 有道词典发音（美式）
+                const urls = [
+                    `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(word)}&type=2`,
+                ];
+                tryAudioUrls(urls, 0);
+            } else {
+                // 百度翻译TTS（英文）
+                const urls = [
+                    `https://fanyi.baidu.com/gettts?lan=en&text=${encodeURIComponent(word)}&spd=3&source=web`,
+                ];
+                tryAudioUrls(urls, 0);
+            }
         }
 
-        // 中文发音：Web Speech API（安卓/鸿蒙系统级支持）
+        // 中文发音：百度翻译TTS（国内访问流畅）
+        // 首次点击用百度TTS，播放中再次点击则切换到系统语音
+        let chineseUseBackup = false; // false=百度TTS, true=Web Speech
         function playChineseAudio(text) {
-            // 先尝试 Web Speech API
+            // 停止所有正在播放的中文语音
             if ('speechSynthesis' in window) {
                 speechSynthesis.cancel();
-                const u = new SpeechSynthesisUtterance(text);
-                u.lang = 'zh-CN';
-                u.rate = 0.85;
-                u.pitch = 1.1;
-                // 等待语音列表加载
-                const trySpeak = () => {
-                    const voices = speechSynthesis.getVoices();
-                    // 优先选中文语音
-                    const zhVoice = voices.find(v => v.lang.startsWith('zh') || v.lang.startsWith('cmn'));
-                    if (zhVoice) u.voice = zhVoice;
-                    speechSynthesis.speak(u);
-                    // 1.5秒没开始说，说明语音引擎没启动，用备用
-                    const timer = setTimeout(() => {
-                        if (!speechSynthesis.speaking) {
-                            playChineseBackup(text);
-                        }
-                    }, 1500);
-                    u.onstart = () => clearTimeout(timer);
-                    u.onerror = () => { clearTimeout(timer); playChineseBackup(text); };
-                };
-                if (speechSynthesis.getVoices().length > 0) {
-                    trySpeak();
-                } else {
-                    speechSynthesis.onvoiceschanged = trySpeak;
-                    // 300ms后如果还没voices，直接尝试
-                    setTimeout(() => {
-                        if (speechSynthesis.getVoices().length === 0) trySpeak();
-                    }, 300);
+            }
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.src = '';
+                currentAudio = null;
+                chineseUseBackup = !chineseUseBackup; // 切换发音方式
+            }
+            
+            if (chineseUseBackup) {
+                // Web Speech API 系统语音
+                if ('speechSynthesis' in window) {
+                    const u = new SpeechSynthesisUtterance(text);
+                    u.lang = 'zh-CN';
+                    u.rate = 0.85;
+                    u.pitch = 1.1;
+                    const trySpeak = () => {
+                        const voices = speechSynthesis.getVoices();
+                        const zhVoice = voices.find(v => v.lang.startsWith('zh') || v.lang.startsWith('cmn'));
+                        if (zhVoice) u.voice = zhVoice;
+                        speechSynthesis.speak(u);
+                    };
+                    if (speechSynthesis.getVoices().length > 0) {
+                        trySpeak();
+                    } else {
+                        speechSynthesis.onvoiceschanged = trySpeak;
+                        setTimeout(() => {
+                            if (speechSynthesis.getVoices().length === 0) trySpeak();
+                        }, 300);
+                    }
                 }
             } else {
+                // 百度翻译TTS
                 playChineseBackup(text);
             }
         }
@@ -1523,7 +1543,6 @@
                 document.getElementById('reviewOptions').innerHTML = '';
                 document.getElementById('reviewRestartWrap').style.display = 'block';
                 return;
-            }
             }
             
             const item = reviewItems[reviewIndex];
